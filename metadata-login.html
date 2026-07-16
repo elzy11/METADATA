@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>metadata — log in or sign up</title>
+<style>
+  :root {
+    --fb-blue: #2374E1;
+    --fb-blue-hover: #3982E4;
+    --accent: #2D88FF;
+    --green: #42B72A;
+    --green-hover: #36A420;
+    --bg: #18191A;
+    --card: #242526;
+    --text: #E4E6EB;
+    --secondary: #B0B3B8;
+    --divider: #3E4042;
+    --input-bg: #3A3B3C;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI Historic", "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg); color: var(--text); font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  button { font-family: inherit; border: none; cursor: pointer; }
+
+  .wrap {
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 32px 16px 16px;
+  }
+  .login-grid {
+    display: flex; align-items: center; justify-content: center; gap: clamp(24px, 6vw, 80px);
+    flex-wrap: wrap; max-width: 1000px; width: 100%; flex: 1;
+  }
+
+  /* ---------- left: wordmark + welcome copy ---------- */
+  .intro { flex: 1 1 400px; max-width: 540px; }
+  .wordmark {
+    color: var(--accent); font-size: clamp(44px, 7vw, 60px); font-weight: 700;
+    letter-spacing: -2.5px; font-family: Helvetica, Arial, sans-serif;
+    line-height: 1; margin-bottom: 16px; user-select: none;
+  }
+  .lead { font-size: clamp(22px, 3vw, 28px); line-height: 1.25; margin-bottom: 14px; }
+  .sub { font-size: 17px; line-height: 1.45; color: var(--text); margin-bottom: 18px; }
+  .extract {
+    font-size: 17px; font-weight: 700; line-height: 1.4; margin-bottom: 18px;
+    color: var(--text);
+  }
+  .fineprint { font-size: 13px; color: var(--secondary); line-height: 1.6; }
+
+  /* ---------- right: login card ---------- */
+  .card {
+    background: var(--card); border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,.5);
+    padding: 20px 18px 26px; width: 396px; max-width: 100%; flex: 0 1 396px;
+  }
+  .field {
+    width: 100%; background: var(--input-bg); border: 1px solid var(--divider);
+    border-radius: 6px; padding: 14px 16px; font-size: 16px; font-family: inherit;
+    color: var(--text); outline: none; margin-bottom: 12px;
+  }
+  .field::placeholder { color: var(--secondary); }
+  .field:focus { border-color: var(--accent); }
+  .helper { font-size: 12px; color: var(--secondary); margin: -6px 2px 12px; line-height: 1.4; }
+  .btn-login {
+    width: 100%; background: var(--fb-blue); color: #fff; font-size: 20px;
+    font-weight: 700; padding: 12px; border-radius: 6px; transition: background .1s;
+  }
+  .btn-login:hover { background: var(--fb-blue-hover); }
+  .consent {
+    font-size: 11px; color: var(--secondary); text-align: center;
+    margin-top: 14px; line-height: 1.45;
+  }
+  .divider { height: 1px; background: var(--divider); margin: 20px 0; }
+  .btn-anon {
+    display: block; margin: 0 auto; background: var(--green); color: #fff;
+    font-size: 17px; font-weight: 600; padding: 12px 18px; border-radius: 6px;
+    transition: background .1s;
+  }
+  .btn-anon:hover { background: var(--green-hover); }
+
+  .disclaimer {
+    font-size: 11px; color: var(--secondary); text-align: center;
+    max-width: 640px; line-height: 1.5; margin-top: 40px;
+  }
+  @media (max-width: 900px) {
+    .intro { text-align: center; }
+    .login-grid { gap: 32px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="login-grid">
+
+    <div class="intro">
+      <h1 class="wordmark">metadata</h1>
+      <p class="lead">welcome to the metadata community</p>
+      <p class="sub">This is the research part — a short survey (~2 min)<br>
+      Participation is optional but much appreciated &lt;3</p>
+      <p class="extract">Just like meta I will be extracting your data now</p>
+      <p class="fineprint">
+        All answers are analyzed anonymously;<br>
+        used for educational purposes only;<br>
+        no personal data is collected or shared;<br>
+        no data will be sold.
+      </p>
+    </div>
+
+    <div class="card">
+      <input class="field" id="nameInput" type="text" placeholder="Name" autocomplete="off" maxlength="80">
+      <input class="field" id="emailInput" type="email" placeholder="Email" autocomplete="off" maxlength="120">
+      <div class="helper">Optional — only used as an identifier, and so you can return to the community later. Any email works.</div>
+      <button class="btn-login" id="loginBtn">Log in</button>
+      <div class="consent">By continuing, you agree to participate in this study for educational and research purposes. Your responses are anonymized.</div>
+      <div class="divider"></div>
+      <button class="btn-anon" id="anonBtn">Continue anonymously</button>
+    </div>
+
+  </div>
+
+  <footer class="disclaimer">
+    This page is an academic prototype created for a thesis project about data and engagement on Meta platforms.
+    It is not affiliated with, operated or endorsed by Meta Platforms, Inc. The Facebook look is deliberately
+    replicated as part of the research concept. Never enter a real password anywhere in this project — it will never ask for one.<br>
+    navigate: H home · N next · B back
+  </footer>
+</div>
+
+<script>
+/* Identity is kept in sessionStorage for now; the Supabase backend will
+   later create a participant record at the SYNC point below. */
+function makeId() {
+  return "v-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+}
+function proceed(anonymous) {
+  const name = document.getElementById("nameInput").value.trim();
+  const email = document.getElementById("emailInput").value.trim();
+  const identity = anonymous || (!name && !email)
+    ? { id: makeId(), anonymous: true, name: "", email: "", ts: Date.now() }
+    : { id: makeId(), anonymous: false, name, email, ts: Date.now() };
+  /* SYNC: create participant in backend here */
+  sessionStorage.setItem("md_identity", JSON.stringify(identity));
+  window.location.href = "metadata-survey.html";
+}
+document.getElementById("loginBtn").addEventListener("click", () => proceed(false));
+document.getElementById("anonBtn").addEventListener("click", () => proceed(true));
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && e.target.matches("input")) proceed(false);
+});
+
+/* ---- H / N / B keyboard navigation (shared across all pages) ---- */
+const ORDER = ["index.html","market.html","space.html","tree.html","metadata-login.html","metadata-survey.html","data-community.html"];
+document.addEventListener("keydown", (e) => {
+  if (e.target.matches("input, textarea, select") || e.metaKey || e.ctrlKey || e.altKey) return;
+  const here = location.pathname.split("/").pop() || "index.html";
+  const i = Math.max(0, ORDER.indexOf(here));
+  const k = e.key.toLowerCase();
+  if (k === "h") location.href = ORDER[0];
+  else if (k === "n") location.href = ORDER[(i + 1) % ORDER.length];
+  else if (k === "b") location.href = ORDER[(i - 1 + ORDER.length) % ORDER.length];
+});
+</script>
+<script src="shared/nav.js"></script>
+</body>
+</html>

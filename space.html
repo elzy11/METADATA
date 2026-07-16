@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>THE ATTENTION SPACE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  html, body { margin: 0; padding: 0; background: #010205; overflow: hidden; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<script>
+  window.addEventListener('load', function () {
+    if (typeof window.p5 === 'undefined') {
+      document.body.innerHTML = '<p style="color:#94a8be;font:12px monospace;padding:2em">'
+        + 'p5.js failed to load from the CDN — check your internet connection.</p>';
+    }
+  });
+  window.onerror = function (msg, src, line) {
+    var d = document.createElement('div');
+    d.style.cssText = 'position:fixed;top:0;left:0;color:#e08080;font:12px monospace;padding:1em;z-index:9';
+    d.textContent = 'Sketch error: ' + msg + ' (line ' + line + ')';
+    document.body.appendChild(d);
+  };
+</script>
+<!-- MetaData module. Deploy structure: page at project root, module at
+     shared/meta_series.js, CSVs at shared/data/. The extra paths are dev
+     fallbacks — 404s are harmless; whichever loads defines window.MetaData. -->
+<script src="shared/meta_series.js"></script>
+<script src="shared/nav.js"></script>
+<script src="shared/p5.min.js"></script>
+<script src="../data/meta_series.js"></script>
+<script src="data/meta_series.js"></script>
+<script src="space.js"></script>
+</body>
+</html>

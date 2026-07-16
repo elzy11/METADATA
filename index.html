@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meta data metaphors</title>
+<style>
+  :root{
+    --meta-blue:#0866FF;
+    --meta-blue-soft:#4d94ff;
+    --ink:#e8eaed;
+    --dim:#9aa0a6;
+    --bg:#000000;
+    --mono:'Courier New', Courier, 'Lucida Console', monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--mono);
+    overflow-x:hidden;
+    /* subtle grid-paper homage to the sketch */
+    background-image:
+      linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px);
+    background-size:56px 56px;
+  }
+
+  /* ---------- top bar ---------- */
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:26px 38px 10px 38px;
+  }
+  .site-title{
+    font-size:clamp(22px,3.2vw,38px);
+    letter-spacing:2px;
+    color:var(--meta-blue);
+    font-weight:bold;
+    text-transform:lowercase;
+    cursor:pointer;
+    user-select:none;
+  }
+  .site-title .prompt{color:var(--dim);font-weight:normal;}
+  .cursor{
+    display:inline-block;width:0.6em;height:1.05em;
+    background:var(--meta-blue);
+    vertical-align:text-bottom;margin-left:6px;
+    animation:blink 1.05s steps(1) infinite;
+  }
+  @keyframes blink{50%{opacity:0;}}
+  .top-actions{display:flex;gap:14px;}
+  .btn{
+    font-family:var(--mono);
+    font-size:14px;letter-spacing:1px;
+    background:transparent;color:var(--ink);
+    border:1px solid var(--meta-blue);
+    padding:9px 20px;cursor:pointer;
+    transition:background .15s,color .15s,box-shadow .15s;
+  }
+  .btn:hover{background:var(--meta-blue);color:#000;box-shadow:0 0 14px rgba(8,102,255,.55);}
+  .btn.solid{background:var(--meta-blue);color:#000;font-weight:bold;}
+  .btn.solid:hover{background:var(--meta-blue-soft);border-color:var(--meta-blue-soft);}
+
+  .tagline{
+    padding:0 40px;color:var(--dim);font-size:13px;letter-spacing:1px;
+  }
+
+  /* ---------- hub ---------- */
+  #hub{position:relative;width:100%;height:calc(100vh - 130px);min-height:620px;}
+  #wires{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+
+  /* avatar */
+  .avatar{
+    position:absolute;left:50%;top:47%;
+    width:220px;height:220px;transform:translate(-50%,-50%);
+    cursor:default;
+  }
+  .avatar svg{width:100%;height:100%;display:block;filter:drop-shadow(0 0 22px rgba(8,102,255,.35));}
+  .avatar .ring{
+    position:absolute;inset:-10px;border:1px dashed rgba(8,102,255,.5);
+    border-radius:50%;animation:spin 24s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .avatar-caption{
+    position:absolute;top:calc(100% + 16px);left:50%;transform:translateX(-50%);
+    color:var(--dim);font-size:11px;letter-spacing:2px;white-space:nowrap;
+  }
+
+  /* ---------- big hexagon callout labels ---------- */
+  .callout{position:absolute;cursor:pointer;text-decoration:none;display:block;}
+  .hex{
+    --clip:polygon(20px 0%, calc(100% - 20px) 0%, 100% 50%, calc(100% - 20px) 100%, 20px 100%, 0% 50%);
+    position:relative;
+    background:var(--meta-blue);
+    clip-path:var(--clip);
+    padding:2px;
+    width:210px;
+    transition:filter .15s, transform .15s;
+  }
+  .hex-inner{
+    background:#000;
+    clip-path:var(--clip);
+    padding:11px 28px 11px 28px;
+    text-align:center;
+  }
+  .callout:hover .hex{filter:drop-shadow(0 0 12px rgba(8,102,255,.9));transform:translateY(-2px);}
+  .hex .name{
+    color:var(--ink);font-size:15px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;white-space:nowrap;
+  }
+  .hex .name .h{color:var(--meta-blue-soft);}
+  .hex .rule{height:1px;background:var(--meta-blue);opacity:.7;margin:6px 12px;}
+  .hex .desc{color:var(--dim);font-size:10px;line-height:1.5;}
+
+  /* ---------- small bracket labels ---------- */
+  .minilabel{
+    position:absolute;cursor:pointer;text-decoration:none;
+    display:flex;align-items:center;gap:8px;
+    color:var(--ink);
+    transition:transform .15s;
+  }
+  .minilabel:hover{transform:translateY(-2px);}
+  .minilabel .angle{color:var(--meta-blue);font-size:24px;font-weight:bold;line-height:1;}
+  .minilabel .body{text-align:center;padding:4px 6px;}
+  .minilabel .name{font-size:14px;letter-spacing:2px;text-transform:uppercase;font-weight:bold;}
+  .minilabel .desc{display:block;color:var(--dim);font-size:10px;margin-top:2px;}
+  .minilabel:hover .body{box-shadow:0 0 10px rgba(8,102,255,.55);}
+
+  /* positions around the avatar */
+  #lab-market   {left:5%;  top:13%;}
+  #lab-space    {left:3%;  top:58%;}
+  #lab-growth   {right:5%; top:13%;}
+  #lab-survey   {right:6%; top:60%;}
+  #lab-community{left:56%; top:83%;}
+
+  footer{
+    text-align:center;color:var(--dim);font-size:11px;letter-spacing:2px;padding:18px 0 26px 0;
+  }
+  footer span{color:var(--meta-blue);}
+
+  /* ---------- small screens: stack ---------- */
+  @media (max-width:860px){
+    #hub{height:auto;min-height:0;display:flex;flex-direction:column;align-items:center;gap:26px;padding:30px 0 50px 0;}
+    #wires{display:none;}
+    .avatar{position:static;transform:none;order:0;}
+    .avatar-caption{position:static;transform:none;display:block;text-align:center;margin-top:12px;}
+    .callout,.minilabel{position:static;}
+    #lab-market{order:1;} #lab-space{order:2;} #lab-growth{order:3;}
+    #lab-survey{order:4;} #lab-community{order:5;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="site-title" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+    <span class="prompt">&gt;_</span> meta&nbsp;data&nbsp;metaphors<span class="cursor"></span>
+  </div>
+  <div class="top-actions">
+    <button class="btn solid" onclick="location.href='market.html'">start&nbsp;&gt;&gt;</button>
+  </div>
+</header>
+<div class="tagline" id="tagline">// 3 data visualizations of our collective data online</div>
+
+<!-- ================= HOME HUB ================= -->
+<section id="home" class="hub-wrap">
+  <div id="hub">
+    <svg id="wires" xmlns="http://www.w3.org/2000/svg"></svg>
+
+    <!-- avatar -->
+    <div class="avatar" id="avatar">
+      <div class="ring"></div>
+      <svg viewBox="0 0 100 100">
+        <defs><clipPath id="cav"><circle cx="50" cy="50" r="48"/></clipPath></defs>
+        <circle cx="50" cy="50" r="48" fill="#d7dade"/>
+        <g clip-path="url(#cav)">
+          <ellipse cx="50" cy="42" rx="15" ry="18" fill="#6b7680"/>
+          <ellipse cx="50" cy="88" rx="30" ry="26" fill="#6b7680"/>
+        </g>
+        <circle cx="50" cy="50" r="48" fill="none" stroke="#0866FF" stroke-width="1.5"/>
+      </svg>
+      <div class="avatar-caption">[ our data ]</div>
+    </div>
+
+    <!-- big callouts -->
+    <a class="callout" id="lab-market" href="market.html">
+      <div class="hex"><div class="hex-inner">
+        <span class="name"><span class="h">#1</span> the market</span>
+        <div class="rule"></div>
+        <div class="desc">engagement activity vs meta stock market</div>
+      </div></div>
+    </a>
+
+    <a class="callout" id="lab-space" href="space.html">
+      <div class="hex"><div class="hex-inner">
+        <span class="name"><span class="h">#2</span> the space</span>
+        <div class="rule"></div>
+        <div class="desc">the user space — where we are in the star system</div>
+      </div></div>
+    </a>
+
+    <a class="callout" id="lab-growth" href="tree.html">
+      <div class="hex"><div class="hex-inner">
+        <span class="name"><span class="h">#3</span> the growth</span>
+        <div class="rule"></div>
+        <div class="desc">meta as organism. the volume of our growth.</div>
+      </div></div>
+    </a>
+
+    <!-- small labels -->
+    <a class="minilabel" id="lab-survey" href="metadata-login.html">
+      <span class="angle">&lt;</span>
+      <span class="body">
+        <span class="name">survey</span>
+        <span class="desc">part of my thesis - pls fill out</span>
+      </span>
+      <span class="angle">&gt;</span>
+    </a>
+
+    <a class="minilabel" id="lab-community" href="data-community.html">
+      <span class="angle">&lt;</span>
+      <span class="body">
+        <span class="name">community</span>
+        <span class="desc">where our discussion can start</span>
+      </span>
+      <span class="angle">&gt;</span>
+    </a>
+  </div>
+</section>
+
+<footer>meta data metaphors <span>//</span> 2026 <span>//</span> 3lza </footer>
+
+<script>
+  /* ---------- H / N / B keyboard navigation (shared across all pages) ---------- */
+  const ORDER = ["index.html","market.html","space.html","tree.html","metadata-login.html","metadata-survey.html","data-community.html"];
+  document.addEventListener("keydown", (e) => {
+    if (e.target.matches("input, textarea, select") || e.metaKey || e.ctrlKey || e.altKey) return;
+    const here = location.pathname.split("/").pop() || "index.html";
+    const i = Math.max(0, ORDER.indexOf(here));
+    const k = e.key.toLowerCase();
+    if (k === "h") location.href = ORDER[0];
+    else if (k === "n") location.href = ORDER[(i + 1) % ORDER.length];
+    else if (k === "b") location.href = ORDER[(i - 1 + ORDER.length) % ORDER.length];
+  });
+
+  /* ---------- callout wires (dot -> diagonal -> straight, like the sketch) ---------- */
+  const NS='http://www.w3.org/2000/svg';
+  const targets=[
+    {id:'lab-market',    side:'left'},
+    {id:'lab-space',     side:'left'},
+    {id:'lab-growth',    side:'right'},
+    {id:'lab-survey',    side:'right'},
+    {id:'lab-community', side:'bottom'}
+  ];
+
+  function drawWires(){
+    const svg=document.getElementById('wires');
+    const hub=document.getElementById('hub');
+    if(!svg||!hub||getComputedStyle(svg).display==='none')return;
+    const hb=hub.getBoundingClientRect();
+    svg.setAttribute('viewBox',`0 0 ${hb.width} ${hb.height}`);
+    svg.innerHTML='';
+    const av=document.getElementById('avatar').getBoundingClientRect();
+    const acx=av.left-hb.left+av.width/2, acy=av.top-hb.top+av.height/2, r=av.width/2+8;
+
+    targets.forEach(t=>{
+      const el=document.getElementById(t.id);if(!el)return;
+      const b=el.getBoundingClientRect();
+      let ex,ey; // end point on the label edge
+      if(t.side==='left'){ ex=b.right-hb.left+6; ey=b.top-hb.top+b.height/2; }
+      else if(t.side==='right'){ ex=b.left-hb.left-6; ey=b.top-hb.top+b.height/2; }
+      else { ex=b.left-hb.left+b.width/2; ey=b.top-hb.top-6; }
+
+      // start point on avatar rim, aimed at the label
+      const ang=Math.atan2(ey-acy,ex-acx);
+      const sx=acx+Math.cos(ang)*r, sy=acy+Math.sin(ang)*r;
+
+      // elbow: last segment runs straight into the label
+      let mx,my;
+      if(t.side==='bottom'){ mx=ex; my=sy+(ey-sy)*0.5; }
+      else{ const dir=(ex>sx)?1:-1; mx=ex-dir*Math.min(70,Math.abs(ex-sx)*0.35); my=ey; }
+
+      const poly=document.createElementNS(NS,'polyline');
+      poly.setAttribute('points',`${sx},${sy} ${mx},${my} ${ex},${ey}`);
+      poly.setAttribute('fill','none');
+      poly.setAttribute('stroke','#0866FF');
+      poly.setAttribute('stroke-width','2');
+      svg.appendChild(poly);
+
+      const dot=document.createElementNS(NS,'circle');
+      dot.setAttribute('cx',sx);dot.setAttribute('cy',sy);dot.setAttribute('r','4.5');
+      dot.setAttribute('fill','#0866FF');
+      svg.appendChild(dot);
+
+      const tip=document.createElementNS(NS,'circle');
+      tip.setAttribute('cx',ex);tip.setAttribute('cy',ey);tip.setAttribute('r','2.5');
+      tip.setAttribute('fill','none');tip.setAttribute('stroke','#0866FF');tip.setAttribute('stroke-width','1.5');
+      svg.appendChild(tip);
+    });
+  }
+
+  window.addEventListener('resize',()=>requestAnimationFrame(drawWires));
+  window.addEventListener('load',drawWires);
+  drawWires();
+</script>
+</body>
+</html>
