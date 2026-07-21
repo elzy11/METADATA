@@ -243,7 +243,15 @@
   </footer>
 </div>
 
+<script src="shared/config.js"></script>
 <script>
+/* pre-fill the Prolific ID captured on the login page (participant types nothing) */
+(function () {
+  const pid = sessionStorage.getItem("md_prolific");
+  const inp = document.getElementById("prolificId");
+  if (pid && inp && !inp.value) inp.value = pid;
+})();
+
 document.querySelectorAll('input[name="gender"]').forEach((r) =>
   r.addEventListener("change", () => {
     document.getElementById("genderCustom").style.display =
@@ -290,36 +298,18 @@ document.getElementById("submitBtn").addEventListener("click", () => {
     },
   };
 
-  /* SYNC: send pre-survey to backend here */
   sessionStorage.setItem("md_baseline", JSON.stringify(baseline));
-  console.log("[metadata] pre-survey:", baseline);
+
+  /* SYNC ✓ store the pre-survey in the database (keepalive survives the redirect) */
+  MD_DB.insert("pre_survey_responses", {
+    participant_id: window.MD_PARTICIPANT_ID,
+    prolific_id: byKey.prolificId || sessionStorage.getItem("md_prolific") || null,
+    payload: baseline,
+  });
 
   window.location.href = "marketintro.html";
 });
-
-const ORDER = [
-  "index.html",
-  "intro-login.html",
-  "pre-survey.html",
-  "marketintro.html",
-  "market.html",
-  "treeintro.html",
-  "tree.html",
-  "spaceintro.html",
-  "space.html",
-  "end-survey.html",
-  "temp-thanks.html",
-  "data-community.html"
-];
-document.addEventListener("keydown", (e) => {
-  if (e.target.matches("input, textarea, select") || e.metaKey || e.ctrlKey || e.altKey) return;
-  const here = location.pathname.split("/").pop() || "metadata-pre-survey.html";
-  const i = Math.max(0, ORDER.indexOf(here));
-  const k = e.key.toLowerCase();
-  if (k === "h") location.href = ORDER[0];
-  else if (k === "n") location.href = ORDER[(i + 1) % ORDER.length];
-  else if (k === "b") location.href = ORDER[(i - 1 + ORDER.length) % ORDER.length];
-});
 </script>
+<script src="shared/nav.js"></script>
 </body>
 </html>

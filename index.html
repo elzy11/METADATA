@@ -255,30 +255,6 @@
 <footer>· metadata metaphors · 2026 · Vrije Universiteit Amsterdam · Faculty of Science · “The Attention Market: Visualising the Hidden Systems of Data Capitalism” · Elza Ucelniece ·  </footer>
 
 <script>
-  /* ---------- H / N / B keyboard navigation (shared across all pages) ---------- */
-  const ORDER = [
-  "index.html",
-  "intro-login.html",
-  "pre-survey.html",
-  "marketintro.html",
-  "market.html",
-  "treeintro.html",
-  "tree.html",
-  "spaceintro.html",
-  "space.html",
-  "end-survey.html",
-  "temp-thanks.html",
-  "data-community.html"
-];
-    document.addEventListener("keydown", (e) => {
-    if (e.target.matches("input, textarea, select") || e.metaKey || e.ctrlKey || e.altKey) return;
-    const here = location.pathname.split("/").pop() || "index.html";
-    const i = Math.max(0, ORDER.indexOf(here));
-    const k = e.key.toLowerCase();
-    if (k === "h") location.href = ORDER[0];
-    else if (k === "n") location.href = ORDER[(i + 1) % ORDER.length];
-    else if (k === "b") location.href = ORDER[(i - 1 + ORDER.length) % ORDER.length];
-  });
 
   /* ---------- callout wires (dot -> diagonal -> straight, like the sketch) ---------- */
   const NS='http://www.w3.org/2000/svg';
@@ -340,5 +316,6 @@
   window.addEventListener('load',drawWires);
   drawWires();
 </script>
+<script src="shared/nav.js"></script>
 </body>
 </html>

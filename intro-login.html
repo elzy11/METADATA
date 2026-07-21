@@ -98,6 +98,10 @@
     font-size: 12px; color: var(--secondary);
     margin: -6px 2px 14px; line-height: 1.4;
   }
+  .prolific-note {
+    font-size: 12px; color: var(--accent); margin: -4px 2px 12px; line-height: 1.4;
+    display: none;
+  }
   .btn-login {
     width: 100%; background: var(--fb-blue); color: #fff; font-size: 20px;
     font-weight: 700; padding: 12px; border-radius: 6px; transition: background .1s;
@@ -163,6 +167,7 @@
 
     <!-- ===== RIGHT ===== -->
     <div class="card">
+      <div class="prolific-note" id="prolificNote">✓ Prolific ID detected — you're all set, just continue.</div>
       <input class="field" id="nameInput" type="text" placeholder="Name" autocomplete="off" maxlength="80">
       <input class="field" id="emailInput" type="email" placeholder="Email" autocomplete="off" maxlength="120">
       <div class="helper">Optional — only used as an identifier so you can return to the community later. Any email works.</div>
@@ -191,18 +196,36 @@
   </footer>
 </div>
 
+<script src="shared/config.js"></script>
 <script>
+/* ---- Prolific ID: captured from the study URL (?PROLIFIC_PID=...) ---- */
+try {
+  const pid = new URLSearchParams(location.search).get("PROLIFIC_PID");
+  if (pid) sessionStorage.setItem("md_prolific", pid);
+} catch (e) {}
+if (sessionStorage.getItem("md_prolific")) {
+  document.getElementById("prolificNote").style.display = "block";
+}
+
 function makeId() {
   return "v-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
 }
 function proceed(anonymous) {
   const name  = document.getElementById("nameInput").value.trim();
   const email = document.getElementById("emailInput").value.trim();
+  const prolific = sessionStorage.getItem("md_prolific") || null;
   const identity = anonymous || (!name && !email)
-    ? { id: makeId(), anonymous: true,  name: "",   email: "", ts: Date.now() }
-    : { id: makeId(), anonymous: false, name, email,           ts: Date.now() };
-  /* SYNC: create participant in backend here */
+    ? { id: makeId(), anonymous: true,  name: "",   email: "", prolificId: prolific, ts: Date.now() }
+    : { id: makeId(), anonymous: false, name, email,           prolificId: prolific, ts: Date.now() };
   sessionStorage.setItem("md_identity", JSON.stringify(identity));
+  /* SYNC ✓ create participant in the database (keepalive survives the redirect) */
+  MD_DB.insert("participants", {
+    id: identity.id,
+    name: identity.name || null,
+    email: identity.email || null,
+    anonymous: identity.anonymous,
+    prolific_id: prolific,
+  });
   window.location.href = "pre-survey.html";
 }
 document.getElementById("loginBtn").addEventListener("click", () => proceed(false));
@@ -210,30 +233,7 @@ document.getElementById("anonBtn").addEventListener("click", () => proceed(true)
 document.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && e.target.matches("input")) proceed(false);
 });
-
-const ORDER = [
-  "index.html",
-  "intro-login.html",
-  "pre-survey.html",
-  "marketintro.html",
-  "market.html",
-  "treeintro.html",
-  "tree.html",
-  "spaceintro.html",
-  "space.html",
-  "end-survey.html",
-  "temp-thanks.html",
-  "data-community.html"
-];
-document.addEventListener("keydown", (e) => {
-  if (e.target.matches("input, textarea, select") || e.metaKey || e.ctrlKey || e.altKey) return;
-  const here = location.pathname.split("/").pop() || "index.html";
-  const i = Math.max(0, ORDER.indexOf(here));
-  const k = e.key.toLowerCase();
-  if (k === "h") location.href = ORDER[0];
-  else if (k === "n") location.href = ORDER[(i + 1) % ORDER.length];
-  else if (k === "b") location.href = ORDER[(i - 1 + ORDER.length) % ORDER.length];
-});
 </script>
+<script src="shared/nav.js"></script>
 </body>
 </html>

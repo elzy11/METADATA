@@ -83,6 +83,14 @@
     padding:13px 36px;
   }
   .btn.solid:hover{background:var(--green-hover);border-color:var(--green-hover);}
+  .btn.prolific{
+    background:var(--accent);color:#fff;border-color:var(--accent);
+    font-weight:700;font-size:16px;padding:12px 28px;display:none;
+  }
+  .btn.prolific:hover{background:var(--accent-soft);border-color:var(--accent-soft);}
+  .prolific-hint{
+    display:none;font-size:12px;color:var(--secondary);margin-top:12px;line-height:1.5;
+  }
 
   .keyhint{
     margin-top:24px;color:var(--secondary);
@@ -112,7 +120,7 @@
   <div class="divider"></div>
 
   <p class="guide">
-    the community is the last piece — for you. a safe space to connect, share, explore, 
+    the community is the last piece — for you. a safe space to connect, share, explore,
     and do so much more than meta can.
     <strong>we are the change</strong>
   </p>
@@ -120,6 +128,11 @@
   <div class="actions">
     <a class="btn" href="index.html">← home</a>
     <a class="btn solid" href="data-community.html">data community →</a>
+    <a class="btn prolific" id="prolificBtn" href="#">return to Prolific ✓</a>
+  </div>
+  <div class="prolific-hint" id="prolificHint">
+    Clicking "return to Prolific" registers your completed submission.
+    Feel free to visit the community first — this page stays in your history.
   </div>
 </div>
 
@@ -127,6 +140,24 @@
   <kbd>H</kbd> home &nbsp; <kbd>N</kbd> next &nbsp; <kbd>B</kbd> back
 </div>
 
+<script>
+/* ═══ PROLIFIC COMPLETION ═══
+   EDIT the code below: in your Prolific study settings, copy the
+   completion URL (it looks like the one here but with your real code
+   after cc=) and paste it in place of this placeholder.
+   The button only appears for participants who arrived via Prolific. */
+const PROLIFIC_COMPLETION_URL = "https://app.prolific.com/submissions/complete?cc=CKRIW01L";
+
+(function () {
+  const pid = sessionStorage.getItem("md_prolific");
+  if (pid) {
+    const btn = document.getElementById("prolificBtn");
+    btn.href = PROLIFIC_COMPLETION_URL;
+    btn.style.display = "inline-block";
+    document.getElementById("prolificHint").style.display = "block";
+  }
+})();
+</script>
 <script src="shared/nav.js"></script>
 </body>
 </html>

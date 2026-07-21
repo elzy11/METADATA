@@ -14,7 +14,7 @@
 // ============================================================
 
 // ------------------------- CONFIG ---------------------------
-const FINNHUB_KEY   = 'd9958dhr01qssj11d7tgd9958dhr01qssj11d7u0';          // <--- paste your Finnhub API key here
+const FINNHUB_PROXY = 'https://wdngikecwyzllklosjum.supabase.co/functions/v1/finhub-proxy';
 const QUOTE_POLL_MS = 15000;       // real-quote poll interval (15s)
 const TICK_MS       = 1000;        // chart tick interval (1s, like real terminals)
 // -------------------------------------------------------------
@@ -146,8 +146,8 @@ function nyNow(){return new Date(new Date().toLocaleString('en-US',{timeZone:'Am
 
 // ==================== LIVE QUOTE (FINNHUB) ====================
 function fetchQuote(){
-  if(!FINNHUB_KEY){quote.source='sim';return;}
-  fetch('https://finnhub.io/api/v1/quote?symbol=META&token='+FINNHUB_KEY)
+  if(!FINNHUB_PROXY){quote.source='sim';return;}
+  fetch(FINNHUB_PROXY+'?endpoint=quote&symbol=META')
     .then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
     .then(j=>{
       if(!j||!j.c){throw new Error('empty quote');}

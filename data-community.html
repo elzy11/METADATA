@@ -81,8 +81,6 @@
     content: ""; position: absolute; left: -8px; top: 6px; bottom: 6px; width: 3px;
     background: var(--fb-blue); border-radius: 0 3px 3px 0;
   }
-  .rail-item[title="Community"] svg { fill: #2D88FF; }
-  .rail-item[title="The Attention Market"] svg { fill: #B0B3B8; }
   @media (max-width: 900px) { .left-rail { display: none; } }
 
   /* ============ PAGE SHELL ============ */
@@ -182,6 +180,26 @@
   }
   .share-item:hover { background: var(--hover-overlay); }
   .share-item svg { width: 18px; height: 18px; fill: var(--secondary); flex-shrink: 0; }
+
+  /* ---- moderator mode (#mod) ---- */
+  .mod-bar {
+    position: fixed; bottom: 16px; left: 16px; z-index: 300;
+    background: var(--card); border: 1px solid var(--divider); border-radius: 8px;
+    box-shadow: 0 4px 14px rgba(0,0,0,.6); padding: 10px; display: flex; gap: 8px; align-items: center;
+  }
+  .mod-bar input {
+    background: var(--bubble); border: 1px solid var(--divider); border-radius: 6px;
+    padding: 7px 10px; color: var(--text); font-family: inherit; font-size: 13px; outline: none;
+  }
+  .mod-bar button {
+    background: #E41E3F; color: #fff; font-weight: 600; font-size: 13px;
+    padding: 7px 14px; border-radius: 6px;
+  }
+  .mod-del {
+    color: #E41E3F; font-weight: 700; font-size: 13px; margin-left: 8px;
+    border: 1px solid #E41E3F; border-radius: 4px; padding: 1px 7px;
+  }
+  .mod-del:hover { background: rgba(228,30,63,.15); }
 
   /* ---- About / More tab panels ---- */
   .panel-narrow { max-width: 900px; margin: 16px auto 0; padding: 0 clamp(8px, 2vw, 40px) 40px; }
@@ -391,73 +409,6 @@
     max-width: 1250px; margin: 0 auto; padding: 0 clamp(16px, 3vw, 40px) 32px;
     font-size: 12px; color: var(--secondary); line-height: 1.4;
   }
-  /* pinned post */
-  .post-pinned {
-  background: var(--card);
-  border-radius: 8px;
-  border: 1px solid var(--accent);
-  padding: 22px 24px 28px;
-  margin-bottom: 24px;
-}
-.post-tag {
-  font-size: 11px;
-  color: var(--accent);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 10px;
-}
-.post-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: 20px;
-  letter-spacing: 0.04em;
-}
-.practice-section {
-  margin-bottom: 20px;
-}
-.practice-section:last-child {
-  margin-bottom: 0;
-}
-.practice-label {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--accent);
-  margin-bottom: 8px;
-  text-transform: lowercase;
-}
-.practice-label span {
-  font-weight: 400;
-  color: var(--secondary);
-}
-.practice-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-.practice-list li {
-  font-size: 14px;
-  color: var(--text);
-  line-height: 1.6;
-  padding-left: 14px;
-  position: relative;
-}
-.practice-list li::before {
-  content: '·';
-  position: absolute;
-  left: 0;
-  color: var(--accent);
-}
-.practice-list li strong {
-  color: var(--text);
-}
-.practice-list li em {
-  color: var(--secondary);
-  font-style: normal;
-}
 </style>
 </head>
 <body>
@@ -492,10 +443,10 @@
       <path fill="#B0B3B8" d="m12 2.1 10 8.4-1.3 1.5-1.2-1v9.5a1.5 1.5 0 0 1-1.5 1.5h-4v-6.5h-4V22H6a1.5 1.5 0 0 1-1.5-1.5V11l-1.2 1L2 10.5z"/>
     </symbol>
     <symbol id="ic-chart" viewBox="0 0 24 24">
-      <path fill="#B0B3B8" d="M4 20V10h3.5v10zm6.25 0V4h3.5v16zm6.25 0v-7H20v7z"/>
+      <path fill="#2D88FF" d="M4 20V10h3.5v10zm6.25 0V4h3.5v16zm6.25 0v-7H20v7z"/>
     </symbol>
     <symbol id="ic-group" viewBox="0 0 24 24">
-      <path fill="#2D88FF" d="M8.5 11a3.25 3.25 0 1 0 0-6.5 3.25 3.25 0 0 0 0 6.5zm7 0a2.75 2.75 0 1 0 0-5.5 2.75 2.75 0 0 0 0 5.5zM8.5 12.5c-3 0-6 1.5-6 3.75V19h12v-2.75c0-2.25-3-3.75-6-3.75zm7 .5c-.42 0-.85.04-1.28.11 1.02.86 1.78 1.95 1.78 3.14V19h5.5v-2.25c0-2-2.7-3.75-6-3.75z"/>
+      <path fill="#B0B3B8" d="M8.5 11a3.25 3.25 0 1 0 0-6.5 3.25 3.25 0 0 0 0 6.5zm7 0a2.75 2.75 0 1 0 0-5.5 2.75 2.75 0 0 0 0 5.5zM8.5 12.5c-3 0-6 1.5-6 3.75V19h12v-2.75c0-2.25-3-3.75-6-3.75zm7 .5c-.42 0-.85.04-1.28.11 1.02.86 1.78 1.95 1.78 3.14V19h5.5v-2.25c0-2-2.7-3.75-6-3.75z"/>
     </symbol>
     <symbol id="ic-grid" viewBox="0 0 24 24">
       <path fill="#B0B3B8" d="M4 4h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 10h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 16h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4z"/>
@@ -529,11 +480,6 @@
     </symbol>
     <symbol id="ic-star" viewBox="0 0 24 24">
       <path fill="#B0B3B8" d="m12 2 2.9 6.2 6.6.8-4.9 4.6 1.3 6.6L12 16.9 6.1 20.2l1.3-6.6L2.5 9l6.6-.8z"/>
-    </symbol>
-    <symbol id="ic-eye" viewBox="0 0 24 24">
-      <path fill="#B0B3B8" d="M12 5.5C7 5.5 3.2 9 1.6 12 3.2 15 7 18.5 12 18.5s8.8-3.5 10.4-6.5C20.8 9 17 5.5 12 5.5z"/>
-      <circle cx="12" cy="12" r="3.6" fill="#242526"/>
-      <circle cx="12" cy="12" r="1.6" fill="#B0B3B8"/>
     </symbol>
     <symbol id="ic-link" viewBox="0 0 24 24">
       <path fill="currentColor" d="M13.5 6.6 15.6 4.5a4.4 4.4 0 0 1 6.2 6.2l-3.5 3.5a4.4 4.4 0 0 1-6.2 0 1 1 0 0 1 1.4-1.4 2.4 2.4 0 0 0 3.4 0l3.5-3.5a2.4 2.4 0 0 0-3.4-3.4l-2.1 2.1a1 1 0 0 1-1.4-1.4zm-3 10.8-2.1 2.1a4.4 4.4 0 0 1-6.2-6.2l3.5-3.5a4.4 4.4 0 0 1 6.2 0 1 1 0 0 1-1.4 1.4 2.4 2.4 0 0 0-3.4 0l-3.5 3.5a2.4 2.4 0 0 0 3.4 3.4l2.1-2.1a1 1 0 0 1 1.4 1.4z"/>
@@ -575,10 +521,10 @@
           <div class="avatar-big"><img src="images/avatar.png" alt="Our Data Community"></div>
           <div class="page-identity">
             <h1 class="page-name">Our Data Community <svg class="verified-badge"><use href="#ic-verified"/></svg></h1>
-            <div class="page-handle">@ourdata · Community</div>
+            <div class="page-handle">@ourdata.com · Community</div>
           </div>
           <div class="header-actions">
-            <a class="btn btn-primary" id="learnMoreBtn" href="files/proposal.pdf" target="_blank" rel="noopener">
+            <a class="btn btn-primary" id="learnMoreBtn" href="#" target="_blank" rel="noopener">
               <svg><use href="#ic-info"/></svg> Learn more
             </a>
           </div>
@@ -589,7 +535,6 @@
         <button class="tab active" data-tabbtn="home">Home</button>
         <button class="tab" data-tabbtn="about">About</button>
         <button class="tab" data-tabbtn="more">More</button>
-        <button class="tab" data-tabbtn="privacy">Privacy</button>
         <div class="tabs-spacer"></div>
         <div class="tabs-actions">
           <button class="btn btn-lightblue" id="pageLikeBtn"><svg><use href="#ic-thumb"/></svg> <span>Like</span></button>
@@ -611,19 +556,21 @@
     <!-- ---------- LEFT: ABOUT ---------- -->
     <div class="about-col">
       <section class="card" id="aboutCard">
-        <div class="card-title">About</a></div>
+        <div class="card-title">About <a href="#" data-toast="Full about page — coming soon.">See all</a></div>
 
         <div class="about-row">
           <span class="about-ic"><svg><use href="#ic-info"/></svg></span>
           <div class="txt">
-            <strong>Our Data Community</strong> — a community built around OUR DATA.
+            <strong>Our Data Community</strong> — a community built around one question: what does Meta really know about you?
+            <div class="placeholder-note">Placeholder </div>
           </div>
         </div>
 
         <div class="about-row">
           <span class="about-ic"><svg><use href="#ic-info"/></svg></span>
           <div class="txt">
-            This page is part of a thesis project exploring data, engagement and awareness on Meta platforms (Facebook &amp; Instagram). After experiencing the project, leave a post or a comment below — your reflections, solutions, future actions. This community is the real goal of this research. (still a working process)
+            This page is part of a thesis project exploring data, engagement and awareness on Meta platforms (Facebook &amp; Instagram). After experiencing the project, leave a post or a comment below — your reflections are the research.
+            <div class="placeholder-note"> Placeholder.</div>
           </div>
         </div>
 
@@ -634,7 +581,7 @@
 
         <div class="about-row">
           <span class="about-ic"><svg><use href="#ic-globe"/></svg></span>
-          <div class="txt"><a href="/files/proposal.pdf" target="_blank" rel="noopener">thesis link</a></div>
+          <div class="txt"><a href="#" target="_blank" rel="noopener">https://your-thesis-link-here.example</a></div>
         </div>
 
         <div class="about-row">
@@ -669,55 +616,23 @@
 
   <!-- ================= ABOUT TAB ================= -->
   <main class="panel-narrow tab-panel" id="panel-about" hidden>
-        <section class="card">
-      <div class="card-title">About the author</div>
-      <p class="long-p">
-        <br>
-        My name is Elza Ucelniece. I am a student at the Vrije Universiteit Amsterdam studying Artificial Intelligence. My interest in that field became an interest in data. Data tells an interesting story and we can learn so much from it. Though it tends to be biased, and what matters most is who collects it, controlls it. They get to decide what the data means and what it is worth. This became a major concern as Big Tech increases its power, now with the help of AI especially. The systems are growing bigger and more complex. If we don't start seeing this and doing something about it, it will be too late to change the course. Intelligence only evolves. My main goal with this project, and potentially future ones, is to give the data back to the people. The data is there and available, so WE should collect it, use it, learn from it ourselves.
-        <br><br>
-        The data is not real… or rather, most of the user data in this project is calculated, estimated, and derived from real figures but difficult to verify in real time at this level of detail. This is due to the limitations of acquiring user data at such a scale. The EU GDPR does, in principle, allow me to acquire such data through legal procedures on an academic basis using the same methods, and with the analysis made anonymous. And that is essentially what Meta does, except they then label and group you, and most of all use you - sell your predicted behaviour to advertising companies. Additionally, I could have also purchased this data, but the price is high relative to the ambition of this project. I would rather not fund a system that already profits from my presence in it anyway. Therefore, my main focus was therefore the visual effect: escaping the enframing digital structures we feel trapped in by design, and demonstrating the scale of the system we have agreed to and how it profits from us. I want to portray that the issue is bigger than the individual, by showing what the collective perspective would look like.
-        <br><br>
-        The financial data is real. We know about the money but not the methods that make it.
-      </p>
-    </section>
     <section class="card">
       <div class="card-title">About this project</div>
-      <p class="long-p"><strong>Metadata Metaphors</strong>
-      <p class="long-p"> is a bachelor's thesis project at the Vrije Universiteit Amsterdam about how Meta — Facebook and Instagram — extracts economic value from human attention, at a scale most people never see. Started as just The Attention Market and developed into more than that. Ending with <strong>Our Data Community</strong>
-      <br>The project builds on three theoretical layers. Lessig argues that code is law — technical architecture regulates behaviour more effectively than any legal system, and extraction is built in by design. Zuboff describes what that architecture is used for: converting human behaviour into data, processed into predictions, sold to advertisers. Heidegger describes what it means to exist inside such a system — where everything, including people, becomes a resource waiting to be optimized.
-      <p>Three visualizations give each layer a form.</p>
-      <br>The Market — the evidence. Two charts for the same company: engagement falling, revenue rising across fourteen years. The divergence is the argument.
-      <br>The Tree — the mechanism. Branches as user activity above ground, roots as accumulated profit below. A pulse travels downward through the trunk whether anyone engages or not. Passive data collection does not need your click.
-      <br>The Space — the condition. Each star is a real quantity of people inside the platform right now, orbiting a black hole that grows with every dollar earned since 2004. You cannot see the edge from inside it.
-        <p> they ask what a policy report cannot — not just what this system does, but what it feels like to be inside it.</p>
-</p>
+      <p class="long-p"><strong>Our Data Community</strong> is part of a thesis project exploring data, engagement and awareness on Meta platforms (Facebook &amp; Instagram) — how attention becomes data, and data becomes value.</p>
+      <p class="long-p">[ EDIT: some text about the project — what the three visualizations show, what the research asks, what you hope visitors take away. ]</p>
+      <div class="placeholder-note">✏️ Placeholder — replace with your project text. Layout specifics can be adjusted later.</div>
     </section>
-        </section>
     <section class="card">
-      <div class="card-title">About the data</div>
-      <p class="long-p">This is an independent academic art and research project produced at Vrije Universiteit Amsterdam. It is not affiliated with, endorsed by, or connected to Meta Platforms, Inc. in any way.<br>
-        <br>
-      Stock prices, revenue figures, and user counts are drawn from Meta's audited public filings and quarterly earnings releases. Engagement volumes are modeled, not measured — Meta does not disclose them publicly — anchored to published industry benchmarks from Hootsuite, Sprout Social, and Buffer, and marked EST throughout. A synthetic dataset adds visual texture to the candlestick charts only.<br>
-      <br>
-      Values from 2026 onward, behavioral rates, and all derived quantities are estimates. Every visual scale is stated where it is used. Individual stars in the galaxy visualization are statistical simulations — no real person's data is shown, collected, or used.<br>
-      <br>
-      The people are counted. The engagement is modeled.
-</p>
+      <div class="card-title">About the author</div>
+      <p class="long-p">[ EDIT: a line or two about you, your programme and university. ]</p>
     </section>
-
     <section class="card">
       <div class="card-title">The proposal</div>
-      <p class="long-p">Abstract.
-        <br> This thesis examines how interactive data visualisation can
-make the hidden mechanisms of social media data collection legible to ordinary users. Drawing on Zuboff’s surveillance capitalism, Lessig’s codeas-law argument, and the attention economy literature, it develops The
-Attention Market — a browser-based, stock-market-styled visualisation
-that renders aggregated social media data flows as an immersive experience. Where privacy policy and regulation have failed to make these systems felt, this project asks whether design can succeed. The methodology
-uses p5.js with open-source and synthetic datasets, evaluated through a
-small user study measuring shifts in awareness.</p>
+      <p class="long-p">[ EDIT: one or two lines introducing the proposal — what it argues and why it matters. ]</p>
       <!-- PDF preview: put your PDF at files/proposal.pdf and a first-page
            image at images/proposal-preview.png — clicking opens the PDF -->
       <a class="pdf-preview" href="files/proposal.pdf" target="_blank" rel="noopener">
-        <img src="images/proposal.png" alt="The proposal — PDF preview">
+        <img src="images/proposal-preview.png" alt="The proposal — PDF preview">
         <span class="pdf-tag">PDF · open ↗</span>
       </a>
     </section>
@@ -727,54 +642,13 @@ small user study measuring shifts in awareness.</p>
   <main class="panel-narrow tab-panel" id="panel-more" hidden>
     <section class="card" style="padding:12px 16px;">
       <div class="card-title" style="margin-bottom:4px;">More</div>
-      <div style="color:var(--secondary);font-size:14px;">more data visualizations, articles and projects that inspired my work.</div>
+      <div style="color:var(--secondary);font-size:14px;">more data visualizations, articles and projects like this one. [ EDIT: add or swap cards freely ]</div>
     </section>
       <div class="more-grid">
-<!-- ═══ CARD 1  -->
+        <!-- ═══ CARD 1 — EDIT: put a preview image at images/article1.png,
+             then change source / title / description / link below ═══ -->
         <section class="card article-card">
-          <div class="article-banner" style="background:linear-gradient(135deg,#0f2b52,#123a75);">🏭<img class="banner-img" src="images/AMorePerfectUnion.png" alt="" onerror="this.remove()"></div>
-          <div class="article-body">
-            <div class="article-src"> data art · dating </div>
-            <div class="article-title">A More Perfect Union</div>
-            <div class="article-desc">R. Luke Dubois
-              <br>large-scale artwork based online dating and the United States Census. An alternative US map, based not on socio-economic fact but on socio-cultural identity.</div>
-            <a href="https://www.lukedubois.com/projects-2/perfect" target="_blank" rel="noopener">LOOK →</a>
-          </div>
-        </section>
-        <!-- ═══ CARD 2 ═══ -->
-        <section class="card article-card">
-          <div class="article-banner" style="background:linear-gradient(135deg,#3a1430,#5c1d47);">🕵️<img class="banner-img" src="images/allthestars.png" alt="" onerror="this.remove()"></div>
-          <div class="article-body">
-            <div class="article-src"> satellite data · installation art</div>
-            <div class="article-title">All the Stars We Cannot See</div>
-            <div class="article-desc">Megan L. Smith & Yujie Gao <br> A deep look into real-time satellite traffic</div>
-            <a href="https://allthestarswecannotsee.space/" target="_blank" rel="noopener">LOOK →</a>
-          </div>
-        </section>
-        <!-- ═══ CARD 3  ═══ -->
-        <section class="card article-card">
-          <div class="article-banner" style="background:linear-gradient(135deg,#33301f,#5c5326);">🎬<img class="banner-img" src="images/iagree.jpg" alt="" onerror="this.remove()"></div>
-          <div class="article-body">
-            <div class="article-src"> social media · privacy policy</div>
-            <div class="article-title">"I Agree"</div>
-            <div class="article-desc">Dima Yarovinsky <br> visualizations of the lengthy (and often overwhelming) “terms of service” agreements from popular social apps—including Facebook, Instagram, Snapchat, and Tinder</div>
-            <a href="https://mymodernmet.com/social-media-policy-infographics-dima-yarovinsky/" target="_blank" rel="noopener">Read →</a>
-          </div>
-        </section>
-                <!-- ═══ CARD 4  -->
-        <section class="card article-card">
-          <div class="article-banner" style="background:linear-gradient(135deg,#0f2b52,#123a75);">🏭<img class="banner-img" src="images/harddata.png" alt="" onerror="this.remove()"></div>
-          <div class="article-body">
-            <div class="article-src"> music · war statistics </div>
-            <div class="article-title">Hard Data</div>
-            <div class="article-desc">R. Luke Dubois
-              <br>translates six years of Iraq War statistics into a string quartet and interactive website, turning a conflict most Americans know through data into experience of twenty-five minutes of music about loss.</div>
-            <a href="https://www.lukedubois.com/projects-2/harddata" target="_blank" rel="noopener">LOOK →</a>
-          </div>
-        </section>
-        <!-- ═══ CARD 5  ═══ -->
-        <section class="card article-card">
-          <div class="article-banner" style="background:linear-gradient(135deg,#0f2b52,#123a75);">🏭<img class="banner-img" src="images/FacebookFactory.png" alt="" onerror="this.remove()"></div>
+          <div class="article-banner" style="background:linear-gradient(135deg,#0f2b52,#123a75);">🏭<img class="banner-img" src="images/article1.png" alt="" onerror="this.remove()"></div>
           <div class="article-body">
             <div class="article-src">Share Lab · research</div>
             <div class="article-title">Facebook Algorithmic Factory</div>
@@ -782,9 +656,54 @@ small user study measuring shifts in awareness.</p>
             <a href="https://labs.rs/en/facebook-algorithmic-factory-immaterial-labour-and-data-harvesting/" target="_blank" rel="noopener">Read →</a>
           </div>
         </section>
-        <!-- ═══ CARD 6 ═══ -->
+        <!-- ═══ CARD 2 — EDIT: put a preview image at images/article2.png,
+             then change source / title / description / link below ═══ -->
         <section class="card article-card">
-          <div class="article-banner" style="background:linear-gradient(135deg,#2a1a3a,#41285c);">📖<img class="banner-img" src="images/Zuboff.png" alt="" onerror="this.remove()"></div>
+          <div class="article-banner" style="background:linear-gradient(135deg,#143a2e,#1d5c40);">🧴<img class="banner-img" src="images/article2.png" alt="" onerror="this.remove()"></div>
+          <div class="article-body">
+            <div class="article-src">Tactical Tech · guide</div>
+            <div class="article-title">Data Detox Kit</div>
+            <div class="article-desc">Small daily steps to cut down what platforms know about you — privacy, wellbeing, misinformation.</div>
+            <a href="https://datadetoxkit.org/" target="_blank" rel="noopener">Read →</a>
+          </div>
+        </section>
+        <!-- ═══ CARD 3 — EDIT: put a preview image at images/article3.png,
+             then change source / title / description / link below ═══ -->
+        <section class="card article-card">
+          <div class="article-banner" style="background:linear-gradient(135deg,#3a1430,#5c1d47);">🕵️<img class="banner-img" src="images/article3.png" alt="" onerror="this.remove()"></div>
+          <div class="article-body">
+            <div class="article-src">The Markup · tool</div>
+            <div class="article-title">Blacklight — tracker inspector</div>
+            <div class="article-desc">Paste any website and watch, in real time, which trackers are watching you.</div>
+            <a href="https://themarkup.org/blacklight" target="_blank" rel="noopener">Read →</a>
+          </div>
+        </section>
+        <!-- ═══ CARD 4 — EDIT: put a preview image at images/article4.png,
+             then change source / title / description / link below ═══ -->
+        <section class="card article-card">
+          <div class="article-banner" style="background:linear-gradient(135deg,#33301f,#5c5326);">🎬<img class="banner-img" src="images/article4.png" alt="" onerror="this.remove()"></div>
+          <div class="article-body">
+            <div class="article-src">Upian · interactive documentary</div>
+            <div class="article-title">Do Not Track</div>
+            <div class="article-desc">A personalised web series about who profits from your data — it tracks you as you watch.</div>
+            <a href="https://donottrack-doc.com/" target="_blank" rel="noopener">Read →</a>
+          </div>
+        </section>
+        <!-- ═══ CARD 5 — EDIT: put a preview image at images/article5.png,
+             then change source / title / description / link below ═══ -->
+        <section class="card article-card">
+          <div class="article-banner" style="background:linear-gradient(135deg,#14343a,#1d545c);">🛒<img class="banner-img" src="images/article5.png" alt="" onerror="this.remove()"></div>
+          <div class="article-body">
+            <div class="article-src">Mozilla · buyer's guide</div>
+            <div class="article-title">*Privacy Not Included</div>
+            <div class="article-desc">How creepy is that gadget? Privacy ratings for connected products and apps.</div>
+            <a href="https://foundation.mozilla.org/en/privacynotincluded/" target="_blank" rel="noopener">Read →</a>
+          </div>
+        </section>
+        <!-- ═══ CARD 6 — EDIT: put a preview image at images/article6.png,
+             then change source / title / description / link below ═══ -->
+        <section class="card article-card">
+          <div class="article-banner" style="background:linear-gradient(135deg,#2a1a3a,#41285c);">📖<img class="banner-img" src="images/article6.png" alt="" onerror="this.remove()"></div>
           <div class="article-body">
             <div class="article-src">The Guardian · essay</div>
             <div class="article-title">The Age of Surveillance Capitalism</div>
@@ -793,66 +712,6 @@ small user study measuring shifts in awareness.</p>
           </div>
         </section>
       </div>
-  </main>
-
-  </main>
-
-  <!-- ================= PRIVACY TAB ================= -->
-  <main class="panel-narrow tab-panel" id="panel-privacy" hidden>
-    <section class="card">
-      <div class="card-title">Privacy Protection Practices</div>
-      <p class="long-p" style="margin-bottom:20px;">
-        None of these are perfect solutions. The system was not built by individual choices and cannot be dismantled by them alone — but starting somewhere matters. Share what you know, add to the list, or leave a post in the community tab.
-      </p>
-
-      <div class="practice-section">
-  <h3 class="practice-label">A. individually <span>you can</span></h3>
-  <ul class="practice-list">
-    <li><strong>use less</strong> — the obvious but tricky one. Every session generates data whether you engage or not. Less time is less signal.</li>
-    <li><strong>adjust your settings</strong> — disable unnecessary location tracking, review app permissions regularly, delete apps you don't use. Small reductions in data collection add up.</li>
-    <li><strong>use encrypted services</strong> — Signal instead of WhatsApp, Proton Mail instead of Gmail, Firefox or Brave instead of Chrome. Business models matter: subscription services have less incentive to profile you than advertising-funded ones.</li>
-    <li><strong>reject cookies</strong> — yes, manually rejecting all takes ages every time, but browser extensions like uBlock Origin or Cookie AutoDelete do it for you.</li>
-    <li><strong>hide</strong> — VPNs, proxies, temporary or fake email addresses for sign-ups. Reduces your traceable footprint across platforms.</li>
-    <li><strong>obfuscate</strong> — generate noise. Browser plug-ins like AdNauseam simulate random browsing and pollute your behavioral profile with fake clicks. If the signal can't be trusted, it loses value.</li>
-  </ul>
-</div>
-
-<div class="practice-section">
-  <h3 class="practice-label">B. collectively <span>we can</span></h3>
-  <ul class="practice-list">
-    <li><strong>talk about it</strong> — awareness spreads through conversation, not just policy. Share what you know.</li>
-    <li><strong>demand alternatives</strong> — support privacy-respecting platforms, open-source tools, and cooperative digital services. Viable alternatives to surveillance-based business models need users to exist.</li>
-    <li><strong>data trusts</strong> — collective institutions that negotiate data rights on behalf of communities, like a union for data subjects. Instead of each person managing their own data alone, a trust negotiates terms with platforms collectively. <em>(Delacroix &amp; Lawrence, 2019)</em></li>
-    <li><strong>limit corporate concentration</strong> — support antitrust enforcement against platforms that have become too large to compete with. Monopoly power makes individual choice less meaningful.</li>
-  </ul>
-</div>
-
-<div class="practice-section">
-  <h3 class="practice-label">C. institutionally <span>we need</span></h3>
-  <ul class="practice-list">
-    <li><strong>close the GDPR gap</strong> — the EU's General Data Protection Regulation is the most significant legal response to surveillance capitalism so far, but it regulates consent and transparency rather than the underlying business model. It was designed around active data sharing, not passive behavioral observation. Stronger legislation would restrict behavioral advertising directly, not just require a pop-up.</li>
-    <li><strong>treat data like labor or property</strong> — if your behavioral data generates economic value, you should have rights over it similar to workers' rights or property rights. This would make extracting behavioral surplus without compensation legally comparable to unpaid labor.</li>
-    <li><strong>require algorithmic transparency</strong> — companies should be required to disclose how recommendation systems work, who they target, and what behavioral data they use. Independent audits, not self-reporting.</li>
-    <li><strong>public digital infrastructure</strong> — some scholars argue that platforms with this much social importance should be publicly owned or governed, like utilities. The internet was built on public investment; its most powerful layer is now privately owned.</li>
-  </ul>
-</div>
-
-<div class="practice-section">
-  <h3 class="practice-label">D. by design <span>we could</span></h3>
-  <ul class="practice-list">
-    <li><strong>humane technology</strong> — designing platforms that work for users rather than against them. Chronological feeds instead of algorithmic ones, friction by design that slows the scroll rather than optimizing it, no autoplay, transparent recommendations. These are features platforms used to have before attention was fully optimized. <em>(Tim Wu, Tristan Harris)</em></li>
-    <li><strong>democratic rationalization</strong> — the argument that technology is not neutral; it embeds social choices. Different priorities could produce platforms that collect less, manipulate less, and give users genuine control. Surveillance capitalism is not how digital platforms have to work — it is how they were designed to work. <em>(Andrew Feenberg)</em></li>
-    <li><strong>alternative platforms</strong> — decentralized and federated social networks like Mastodon operate without behavioral advertising. They are smaller and less polished but they prove the model is possible.</li>
-  </ul>
-</div>
-    </section>
-
-    <section class="card">
-      <div class="card-title">Add your own</div>
-      <p class="long-p" style="color:var(--secondary);font-size:14px;">
-        Know a tool, practice, or resource not listed here? Post it in the community tab — the best suggestions may be added to this list.
-      </p>
-    </section>
   </main>
 
   <footer class="disclaimer">
@@ -865,6 +724,7 @@ small user study measuring shifts in awareness.</p>
 
 <div class="toast" id="toast"></div>
 
+<script src="shared/config.js"></script>
 <script>
 /* ==========================================================================
    YOUR DATA COMMUNITY — frontend prototype (in-memory only)
@@ -888,7 +748,8 @@ const state = {
   iLikePage: false,
   posts: [
     {
-      /* ═══ PINNED POST ═══ */
+      /* ═══ PINNED POST — plain template: no likes, no reactions, no comments.
+         EDIT the text between the backticks below. ═══ */
       id: "p-pinned",
       pinned: true,
       plain: true,
@@ -896,32 +757,14 @@ const state = {
       admin: true,
       createdAt: now - 26 * 3600 * 1000,
       text:
-`─────────────────────────────
-PRIVACY PROTECTION PRACTICES
-─────────────────────────────
+`Welcome to Our Data Community
 
-A. individually (you can)
-· use less — obvious but tricky
-· adjust settings - disable location tracking, review app permissions, delete unused apps
-· use encrypted services
-· reject cookies — long process manually, use blockers
-· hide — VPNs, temporary emails, proxies
-· obfuscate — generate noise, pollute the signal, fake clicks, browser plug-in
+Thank you for being part of my project 
 
-B. collectively (we can)
-· talk about it, support alternatives, data trusts communities
+this page is where the conversation continues, where we build a community and find solutions to protect our data - thus oursevlves
 
-C. institutionally (we need)
-· close the GDPR gap, treat data like labor, require full transparency, public digital infrastructure 
 
-D. by design (we could)
-· humane technology, democratic design, alternative platforms
-
-─────────────────────────────
-Check out the PRIVACY tab for more details. 
-
-Post, comment, share your own practices. Lets find a solution together`,
-
+[ draft text ]`,
     }
 
 
@@ -932,6 +775,12 @@ Post, comment, share your own practices. Lets find a solution together`,
 const IDENTITY = JSON.parse(sessionStorage.getItem("md_identity") || "null");
 const VISITOR_NAME = IDENTITY && !IDENTITY.anonymous && IDENTITY.name ? IDENTITY.name : "";
 const DISPLAY_NAME = VISITOR_NAME || "Anonymous visitor";
+
+/* ---------- database (Supabase via shared/config.js) ---------- */
+const DB = window.MD_DB;
+const MY_ID = window.MD_PARTICIPANT_ID;
+const LIKE_BASE = 127;              /* display offset added to the real like count */
+let MOD_ON = false;                 /* moderator mode (open the page with #mod) */
 
 /* ---------- helpers ---------- */
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -974,7 +823,9 @@ function renderPageButtons() {
 $("#pageLikeBtn").addEventListener("click", () => {
   state.iLikePage = !state.iLikePage;
   state.pageLikes += state.iLikePage ? 1 : -1;
-  /* SYNC: send page-like to backend here */
+  /* SYNC ✓ page like -> database */
+  if (state.iLikePage) DB.insert("page_likes", { participant_id: MY_ID });
+  else DB.del("page_likes", "participant_id=eq." + encodeURIComponent(MY_ID));
   renderPageButtons();
   if (state.iLikePage) toast("Thanks for liking Our Data Community 💙");
 });
@@ -1014,6 +865,7 @@ function commentHTML(post, c) {
       <div class="comment-actions">
         <button class="${likeCls}" data-rxtrigger data-kind="comment" data-id="${c.id}" data-post="${post.id}">${likeLabel}</button>
         <span>${timeAgo(c.createdAt)}</span>
+        ${MOD_ON ? `<button class="mod-del" data-moddel="comment" data-id="${c.id}">✕</button>` : ""}
       </div>
     </div>
   </div>`;
@@ -1058,7 +910,7 @@ function postHTML(p) {
         </div>
         <div class="post-time">${timeAgo(p.createdAt)} · <svg><use href="#ic-globe"/></svg></div>
       </div>
-      <button class="post-menu" data-toast="Post options — coming soon."><svg width="20" height="20"><use href="#ic-dots"/></svg></button>
+      ${MOD_ON ? `<button class="mod-del" data-moddel="post" data-id="${p.id}">✕ delete</button>` : `<button class="post-menu" data-toast="Post options — coming soon."><svg width="20" height="20"><use href="#ic-dots"/></svg></button>`}
     </div>
     <div class="post-body">${esc(p.text)}</div>
     <div class="rx-summary">
@@ -1123,12 +975,17 @@ function applyReaction(kind, id, postId, rxKey) {
   if (t.myReaction === rxKey) {          // same reaction again -> remove
     t.reactions[rxKey]--;
     t.myReaction = null;
+    /* SYNC ✓ remove reaction from database */
+    DB.del("reactions", `target_type=eq.${kind}&target_id=eq.${encodeURIComponent(id)}&participant_id=eq.${encodeURIComponent(MY_ID)}`);
   } else {
     if (t.myReaction) t.reactions[t.myReaction]--;   // switch
     t.reactions[rxKey]++;
     t.myReaction = rxKey;
+    /* SYNC ✓ save/replace reaction in database */
+    DB.insert("reactions",
+      { target_type: kind, target_id: id, participant_id: MY_ID, reaction: rxKey },
+      { onConflict: "target_type,target_id,participant_id" });
   }
-  /* SYNC: send reaction to backend here */
   closePicker();
   renderFeed();
 }
@@ -1233,7 +1090,7 @@ function submitComment(postId) {
   if (!text) return;
   const post = state.posts.find((p) => p.id === postId);
   if (!post) return;
-  post.comments.push({
+  const newComment = {
     id: "c-" + Date.now() + "-" + Math.floor(Math.random() * 1e4),
     author: DISPLAY_NAME,
     admin: false,
@@ -1241,8 +1098,13 @@ function submitComment(postId) {
     text,
     reactions: { like: 0, love: 0, haha: 0, wow: 0, sad: 0, angry: 0 },
     myReaction: null,
+  };
+  post.comments.push(newComment);
+  /* SYNC ✓ comment -> database */
+  DB.insert("comments", {
+    id: newComment.id, post_id: postId, author: DISPLAY_NAME,
+    participant_id: MY_ID, body: text,
   });
-  /* SYNC: send comment to backend here */
   inp.value = "";
   renderFeed();
 }
@@ -1257,7 +1119,7 @@ $("#composerSubmit").addEventListener("click", () => {
   const ta = $("#composerText");
   const text = ta.value.trim();
   if (!text) return;
-  state.posts.push({
+  const newPost = {
     id: "p-" + Date.now(),
     pinned: false,
     author: DISPLAY_NAME,
@@ -1267,8 +1129,12 @@ $("#composerSubmit").addEventListener("click", () => {
     reactions: { like: 0, love: 0, haha: 0, wow: 0, sad: 0, angry: 0 },
     myReaction: null,
     comments: [],
+  };
+  state.posts.push(newPost);
+  /* SYNC ✓ post -> database */
+  DB.insert("posts", {
+    id: newPost.id, author: DISPLAY_NAME, participant_id: MY_ID, body: text,
   });
-  /* SYNC: send post to backend here */
   ta.value = "";
   $("#composerSubmit").disabled = true;
   $("#composerBox").classList.remove("open");
@@ -1342,6 +1208,99 @@ async function copyLink(page, label) {
 $("#copyHome").addEventListener("click", () => copyLink("index.html", "Homepage"));
 $("#copyCommunity").addEventListener("click", () => copyLink("data-community.html", "Community"));
 
+/* ---------- load the shared feed from the database ---------- */
+const EMPTY_RX = () => ({ like: 0, love: 0, haha: 0, wow: 0, sad: 0, angry: 0 });
+
+async function syncFromDB() {
+  if (!DB.enabled()) return;
+  const [posts, comments, reactions, likes] = await Promise.all([
+    DB.select("posts", "select=*&order=created_at.desc&limit=300"),
+    DB.select("comments", "select=*&order=created_at.asc&limit=2000"),
+    DB.select("reactions", "select=*&limit=8000"),
+    DB.select("page_likes", "select=participant_id"),
+  ]);
+  if (!posts) return; /* network hiccup -> keep what we have */
+
+  /* aggregate reactions per target */
+  const agg = {};
+  (reactions || []).forEach((r) => {
+    const k = r.target_type + ":" + r.target_id;
+    if (!agg[k]) agg[k] = { counts: EMPTY_RX(), mine: null };
+    agg[k].counts[r.reaction] = (agg[k].counts[r.reaction] || 0) + 1;
+    if (r.participant_id === MY_ID) agg[k].mine = r.reaction;
+  });
+  const rxOf = (kind, id) => (agg[kind + ":" + id] ? agg[kind + ":" + id].counts : EMPTY_RX());
+  const mineOf = (kind, id) => (agg[kind + ":" + id] ? agg[kind + ":" + id].mine : null);
+
+  /* group comments by post */
+  const byPost = {};
+  (comments || []).forEach((c) => {
+    (byPost[c.post_id] = byPost[c.post_id] || []).push({
+      id: c.id, author: c.author, admin: false,
+      createdAt: new Date(c.created_at).getTime(), text: c.body,
+      reactions: rxOf("comment", c.id), myReaction: mineOf("comment", c.id),
+    });
+  });
+
+  const dbPosts = posts.map((row) => ({
+    id: row.id, pinned: false, author: row.author, admin: false,
+    createdAt: new Date(row.created_at).getTime(), text: row.body,
+    reactions: rxOf("post", row.id), myReaction: mineOf("post", row.id),
+    comments: byPost[row.id] || [],
+  }));
+
+  /* keep the local pinned post + any very fresh local posts the DB hasn't returned yet */
+  const pinnedLocal = state.posts.filter((x) => x.pinned);
+  const dbIds = new Set(dbPosts.map((x) => x.id));
+  const freshLocal = state.posts.filter(
+    (x) => !x.pinned && !dbIds.has(x.id) && Date.now() - x.createdAt < 60000
+  );
+  state.posts = pinnedLocal.concat(freshLocal, dbPosts);
+
+  if (likes) {
+    state.pageLikes = LIKE_BASE + likes.length;
+    state.iLikePage = likes.some((l) => l.participant_id === MY_ID);
+  }
+  renderPageButtons();
+  renderFeed();
+}
+
+/* refresh the shared feed periodically (drafts in inputs are preserved) */
+setInterval(() => {
+  if (!document.activeElement || !document.activeElement.matches("[data-commentinput], #composerText")) {
+    syncFromDB();
+  }
+}, 25000);
+
+/* ---------- moderator mode: open the page as data-community.html#mod ---------- */
+if (location.hash === "#mod") {
+  const bar = document.createElement("div");
+  bar.className = "mod-bar";
+  bar.innerHTML = `<span style="font-size:13px;color:var(--secondary);">moderator</span>
+    <input type="password" id="modPw" placeholder="mod password">
+    <button id="modGo">enable</button>`;
+  document.body.appendChild(bar);
+  const saved = sessionStorage.getItem("md_modpw");
+  if (saved) { bar.querySelector("#modPw").value = saved; }
+  bar.querySelector("#modGo").addEventListener("click", () => {
+    const pw = bar.querySelector("#modPw").value.trim();
+    if (!pw) return;
+    sessionStorage.setItem("md_modpw", pw);
+    MOD_ON = true;
+    renderFeed();
+    toast("Moderator mode on — ✕ buttons delete posts/comments.");
+  });
+}
+document.addEventListener("click", (e) => {
+  const md = e.target.closest("[data-moddel]");
+  if (!md) return;
+  const pw = sessionStorage.getItem("md_modpw") || "";
+  DB.rpc("mod_delete", { t_type: md.dataset.moddel, t_id: md.dataset.id, secret: pw }).then((ok) => {
+    if (ok) { toast("Deleted."); syncFromDB(); }
+    else toast("Delete failed — wrong password?");
+  });
+});
+
 /* ---------- init ---------- */
 if (VISITOR_NAME) {
   const acc = $("#accountBtn");
@@ -1351,6 +1310,13 @@ if (VISITOR_NAME) {
 }
 renderPageButtons();
 renderFeed();
+if (DB.enabled()) {
+  $("#storageNote").textContent =
+    "Posts, comments and reactions are stored anonymously and shared with other participants.";
+  syncFromDB();
+} else {
+  console.log("[metadata] running in local mode — fill shared/config.js to enable the shared feed.");
+}
 </script>
 </body>
 </html>
