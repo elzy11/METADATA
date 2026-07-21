@@ -30,7 +30,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           # Point this to your specific folder!
-          path: './taxonomy/'
+          path: .
 
       - name: Deploy to GitHub Pages
         id: deployment
