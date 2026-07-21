@@ -899,7 +899,11 @@ function drawSidebar(){
   sPair(x,rw,y,'EU',nfc(floor(liveClicksEU)),'Global',nfc(floor(liveClicksEU/MD.euShare(nowYf()))));y+=33*U;
 
   estLabel(x,y,'Revenue / min');y+=15*U;
-  sPair(x,rw,y,'EU',fxs()+nfc(floor(fxv(liveRevEU))),'Global',fxs()+nfc(floor(fxv(liveRevGlobal))));y+=37*U;
+  sPair(x,rw,y,'EU',fxs()+nfc(floor(fxv(liveRevEU))),'Global',fxs()+nfc(floor(fxv(liveRevGlobal))));y+=29*U;
+  // where the money comes from — reported ad share (MetaData v7, 10-K)
+  fill(C.textDim);TS(10);textAlign(LEFT);
+  text('advertising ≈'+round(MD.adShare(nowYf())*100)+'%',x+10*U,y);
+  y+=19*U;
 
   sDiv(x,rw,y);y+=20*U;
 
