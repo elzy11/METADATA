@@ -3,14 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>metadata — the attention market</title>
+<title>#1 the attention market — intro</title>
 <style>
+  /* same design system as metadata-login / metadata-survey */
   :root {
     --fb-blue: #2374E1;
     --fb-blue-hover: #3982E4;
     --accent: #2D88FF;
-    --green: #42B72A;
-    --green-hover: #36A420;
     --bg: #18191A;
     --card: #242526;
     --text: #E4E6EB;
@@ -21,247 +20,216 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: "Segoe UI Historic", "Segoe UI", Helvetica, Arial, sans-serif;
-    background: var(--bg); color: var(--text); font-size: 15px;
+    background: var(--bg); color: var(--text); font-size: 16px;
     -webkit-font-smoothing: antialiased;
   }
   a { color: var(--accent); text-decoration: none; }
   a:hover { text-decoration: underline; }
-  button { font-family: inherit; border: none; cursor: pointer; }
 
-  .wrap {
-    min-height: 100vh; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; padding: 32px 16px 16px;
-  }
-  .login-grid {
-    display: flex; align-items: center; justify-content: center;
-    gap: clamp(24px, 6vw, 80px); flex-wrap: wrap;
-    max-width: 1000px; width: 100%; flex: 1;
-  }
+  .wrap { max-width: 780px; margin: 0 auto; padding: 70px 16px 48px; }
 
-  /* ---------- left: intro ---------- */
-  .intro { flex: 1 1 400px; max-width: 520px; }
-
-  .alpha {
-    color: var(--accent); font-size: clamp(14px, 2vw, 18px); font-weight: 700;
-    letter-spacing: -0.5px; font-family: Helvetica, Arial, sans-serif;
-    margin-bottom: 4px; user-select: none;
-  }
   .wordmark {
-    color: var(--accent); font-size: clamp(44px, 7vw, 60px); font-weight: 700;
-    letter-spacing: -2.5px; font-family: Helvetica, Arial, sans-serif;
-    line-height: 1; margin-bottom: 18px; user-select: none;
-  }
-  .welcome {
-    font-size: 22px; color: var(--secondary); margin-bottom: 20px;
+    position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 50;
+    color: var(--accent); font-size: 19px; font-weight: 700; letter-spacing: -0.8px;
+    font-family: Helvetica, Arial, sans-serif; user-select: none;
   }
 
-  /* project description */
-  .desc {
-    font-size: 16px; line-height: 1.6; color: var(--text);
-    margin-bottom: 14px;
+  /* ---------- title + unified subtitle ---------- */
+  .viz-title {
+    text-align: center; font-size: clamp(28px, 5vw, 38px); font-weight: 700;
+    margin-bottom: 4px;
   }
-  .desc-pieces {
-    font-size: 15px; line-height: 1.65; color: var(--secondary);
-    margin-bottom: 20px;
+  .viz-title .h { color: var(--accent); }
+  .viz-sub {
+    text-align: center; font-weight: 700; font-size: 17px; letter-spacing: .5px;
+    margin-bottom: 2px;
   }
-  .question {
-    font-size: 17px; font-style: italic; color: var(--text);
-    margin-bottom: 28px; line-height: 1.4;
-  }
-
-  /* survey note */
-  .survey-note {
-    font-size: 13px; color: var(--secondary); margin-bottom: 6px;
-  }
-  .extract {
-    font-size: 14px; font-weight: 600; color: var(--text);
-    margin-bottom: 6px;
-  }
-  .fineprint {
-    font-size: 12px; color: var(--secondary); line-height: 1.7;
+  .viz-how {
+    text-align: center; color: var(--accent); font-style: italic; font-size: 15.5px;
+    margin-bottom: 22px;
   }
 
-  /* ---------- right: card ---------- */
+  /* ---------- card ---------- */
   .card {
-    background: var(--card); border-radius: 8px;
-    box-shadow: 0 2px 12px rgba(0,0,0,.5);
-    padding: 20px 18px 26px; width: 396px; max-width: 100%; flex: 0 1 396px;
+    background: var(--card); border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,.5);
+    padding: 22px 28px 26px; position: relative;
   }
-  .field {
-    width: 100%; background: var(--input-bg); border: 1px solid var(--divider);
-    border-radius: 6px; padding: 14px 16px; font-size: 16px; font-family: inherit;
-    color: var(--text); outline: none; margin-bottom: 12px;
+  .card-path {
+    color: var(--secondary); font-size: 13px; letter-spacing: .5px; padding-bottom: 10px;
   }
-  .field::placeholder { color: var(--secondary); }
-  .field:focus { border-color: var(--accent); }
-  .helper {
-    font-size: 12px; color: var(--secondary);
-    margin: -6px 2px 14px; line-height: 1.4;
-  }
-  .prolific-note {
-    font-size: 12px; color: var(--accent); margin: -4px 2px 12px; line-height: 1.4;
-    display: none;
-  }
-  .btn-login {
-    width: 100%; background: var(--fb-blue); color: #fff; font-size: 20px;
-    font-weight: 700; padding: 12px; border-radius: 6px; transition: background .1s;
-  }
-  .btn-login:hover { background: var(--fb-blue-hover); }
+  .head-divider { height: 1px; background: var(--divider); margin: 0 -28px 6px; }
 
-  .divider { height: 1px; background: var(--divider); margin: 20px 0; }
+  .sec { padding: 14px 0 2px; }
+  .sec + .sec { border-top: 1px solid var(--divider); margin-top: 14px; }
+  .sec-label {
+    color: var(--accent); font-size: 14px; font-weight: 700; letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .sec p { font-size: 16px; line-height: 1.7; color: var(--text); }
 
-  .btn-anon {
-    display: block; margin: 0 auto; background: var(--green); color: #fff;
-    font-size: 17px; font-weight: 600; padding: 12px 18px; border-radius: 6px;
-    transition: background .1s;
+  .metaphor {
+    border-left: 2px solid var(--accent);
+    padding: 4px 0 4px 14px;
+    font-size: 16.5px; line-height: 1.7;
   }
-  .btn-anon:hover { background: var(--green-hover); }
+  .note {
+    margin-top: 10px; font-size: 0.86rem; opacity: 0.75; color: #c7c6c6; line-height: 1.7;
+  }
 
-  /* ---------- keyboard controls banner above the card ---------- */
-  .card-col{ flex:0 1 396px; max-width:100%; }
-  .keys-banner{
-    margin-bottom:16px; text-align:center;
-    color:var(--secondary); letter-spacing:1px;
+  /* ---------- icons legend ---------- */
+  .legend { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
+  .legend-row { display: flex; align-items: center; gap: 14px; }
+  .icon-box {
+    width: 50px; height: 50px; flex-shrink: 0; border-radius: 8px;
+    border: 1px solid var(--divider); background: var(--input-bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: var(--accent);
   }
-  .keys-banner .kb-title{
-    display:block; font-size:13px; font-weight:700; letter-spacing:2px;
-    margin-bottom:10px; color:var(--secondary);
+  .legend-text .lname { font-size: 14.5px; font-weight: 700; letter-spacing: .3px; }
+  .legend-text .ldesc { font-size: 13.5px; color: var(--secondary); margin-top: 2px; line-height: 1.5; }
+
+  /* candle mini-icon (green/red like the viz) */
+  .candles { display: flex; gap: 3px; align-items: center; height: 22px; }
+  .candles i { display: block; width: 4px; border-radius: 1px; }
+  .candles i:nth-child(1) { height: 15px; background: #00d97e; }
+  .candles i:nth-child(2) { height: 9px;  background: #ef5350; }
+  .candles i:nth-child(3) { height: 19px; background: #00d97e; }
+
+  /* ---------- disclaimer + data (kept deliberately tiny) ---------- */
+  .disclaimer {
+    font-size: 0.75rem; color: #8a8d91; line-height: 1.65; letter-spacing: .2px;
+    border-left: 1px solid var(--divider); padding-left: 12px; margin-bottom: 10px;
   }
-  .keys-banner kbd{
-    display:inline-block; background:var(--input-bg);
-    border:1px solid var(--divider); border-radius:5px;
-    padding:7px 14px; font-family:inherit; font-size:17px; font-weight:700;
-    color:var(--text); margin:0 3px;
+  .data-line { font-size: 0.66rem; color: #6d7378; line-height: 1.8; letter-spacing: .2px; }
+  .data-line span { color: #5a8fd8; }
+
+  /* ---------- fixed corner buttons ---------- */
+  .corner-btn {
+    position: fixed; top: 16px; z-index: 50;
+    font-family: inherit; font-size: 15px; font-weight: 600;
+    padding: 9px 22px; border-radius: 6px; border: none; cursor: pointer;
+    text-decoration: none; display: inline-block; transition: background .1s;
   }
-  .keys-banner .kb-word{
-    font-size:14px; color:var(--secondary); margin-right:10px;
-  }
+  .corner-btn:hover { text-decoration: none; }
+  .corner-btn.back { left: 16px; background: var(--input-bg); color: var(--text); }
+  .corner-btn.back:hover { background: #4E4F50; }
+  .corner-btn.next { right: 16px; background: var(--fb-blue); color: #fff; }
+  .corner-btn.next:hover { background: var(--fb-blue-hover); }
 
   /* ---------- footer ---------- */
-  .disclaimer {
-    font-size: 11px; color: var(--secondary); text-align: center;
-    width: 100%; max-width: 1000px; line-height: 1.65; margin-top: 48px;
-    padding: 0 16px;
+  .keyhint{
+    margin-top:24px;color:var(--secondary);
+    font-size:11px;letter-spacing:1px;text-align:center;
   }
-  .disclaimer strong { color: var(--secondary); font-weight: 600; }
-  .contact {
-    font-size: 12px; color: var(--secondary); margin-top: 20px; line-height: 1.7;
-  }
-  .contact a { color: var(--secondary); text-decoration: underline; }
-
-  @media (max-width: 900px) {
-    .intro { text-align: center; }
-    .login-grid { gap: 32px; }
+  .keyhint kbd{
+    display:inline-block;background:var(--input-bg);
+    border:1px solid var(--divider);border-radius:3px;
+    padding:1px 5px;font-family:inherit;font-size:11px;color:var(--text);
   }
 </style>
 </head>
 <body>
+
+<a class="corner-btn back" href="pre-survey.html">‹ back</a>
+<a class="corner-btn next" href="market.html">next ›</a>
+
 <div class="wrap">
-  <div class="login-grid">
+  <div class="wordmark">metadata</div>
 
-    <!-- ===== LEFT ===== -->
-    <div class="intro">
-      <p class="alpha">Alpha Beta</p>
-      <h1 class="wordmark">metadata</h1>
-      <p class="welcome">welcome to our metadata</p>
+  <h1 class="viz-title"><span class="h">#1</span> the attention market</h1>
+  <div class="viz-sub">value · data · (daily)</div>
+  <div class="viz-how">how it works</div>
 
-      <p class="desc">
-        Metadata Metaphors is a collection of three data visualizations of how Meta extracts
-        profit from human attention — built as part of a bachelor's thesis on data capitalism
-        and surveillance at Vrije Universiteit Amsterdam.
-      </p>
-      <p class="desc-pieces">
-        You are about to move through three pieces: a live trading terminal, a growing tree,
-        and a galaxy you are already inside. Each one shows the same system from a different
-        distance — the evidence, the mechanism, the condition.
-      </p>
-      <p class="question">What can art actually do that a policy report cannot?</p>
+  <div class="card">
+    <div class="card-path">~/metaphors/01_attention_market/intro</div>
+    <div class="head-divider"></div>
 
-      <p class="survey-note">Participation in the study is optional but much appreciated &lt;3</p>
-      <p class="extract">Just like Meta, I will be extracting your data now.</p>
-      <p class="fineprint">
-        All answers are anonymous · used for educational and research purposes only ·
-        no personal data is collected or shared · no data will be sold.
-      </p>
-    </div>
-
-    <!-- ===== RIGHT ===== -->
-    <div class="card-col">
-      <div class="keys-banner">
-        <span class="kb-title">KEYBOARD CONTROLS TO USE:</span>
-        <kbd>H</kbd> <span class="kb-word">home</span>
-        <kbd>N</kbd> <span class="kb-word">next</span>
-        <kbd>B</kbd> <span class="kb-word">back</span>
+    <!-- metaphor first -->
+    <div class="sec">
+      <div class="sec-label">metaphor</div>
+      <div class="metaphor">
+      engagement as stock — every like, comment and share is a trade,
+      and your attention is the asset being priced. Raw material.<br>
+      Wall Street values Meta in dollars; the feed values you in engagement.
+      Two markets, one company, one closes every night, the other never sleeps.
       </div>
-      <div class="card">
-      <div class="prolific-note" id="prolificNote">✓ Prolific ID detected — you're all set, just continue.</div>
-      <input class="field" id="nameInput" type="text" placeholder="Name" autocomplete="off" maxlength="80">
-      <input class="field" id="emailInput" type="email" placeholder="Email" autocomplete="off" maxlength="120">
-      <div class="helper">Optional — only used as an identifier so you can return to the community later. Any email works.</div>
-      <button class="btn-login" id="loginBtn">Log in</button>
-      <div class="divider"></div>
-      <button class="btn-anon" id="anonBtn">Continue anonymously</button>
-      <p style="font-size:11px;color:var(--secondary);text-align:center;margin-top:14px;line-height:1.5;">
-        If you have any questions or concerns, feel free to contact me —<br>
-        <a href="mailto:e.ucelniece@student.vu.nl" style="color:var(--secondary);">e.ucelniece@student.vu.nl</a>
-      </p>
+      <div class="note">
+        This is what they publish, what they admit to - the evidence.
+        Concrete numbers: engagement rates, revenue per minute, the financial result of designed behaviour.
+        Architecture as law — the technical choices that make extraction not just possible but invisible.
+      </div>
     </div>
 
+    <div class="sec">
+      <div class="sec-label">description</div>
+      <p>A live trading terminal with two charts for the same company. On top, the attention
+      market: engagement per minute in the EU, drawn as candlesticks that breathe with the day
+      and tick every second. Below it, the money: META on NASDAQ, real closing prices from the
+      2012 IPO to a live quote. Zoom from one day to fourteen years — and watch the moments
+      where the two lines disagree: the money panics, the attention never flinches.</p>
+    </div>
+
+    <div class="sec">
+      <div class="sec-label">icons</div>
+      <div class="legend">
+        <div class="legend-row">
+          <div class="icon-box"><span class="candles"><i></i><i></i><i></i></span></div>
+          <div class="legend-text">
+            <div class="lname">candles — the attention market</div>
+            <div class="ldesc">engagement events (likes, comments, shares) per minute, EU · green up, red down · trades 24/7 · modeled, marked EST</div>
+          </div>
+        </div>
+        <div class="legend-row">
+          <div class="icon-box">
+            <svg width="26" height="16" viewBox="0 0 26 16" fill="none">
+              <path d="M1 13 L6 10 L10 12 L15 6 L19 8 L25 2" stroke="#2D88FF" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="legend-text">
+            <div class="lname">line — the money</div>
+            <div class="ldesc">META:NASDAQ, real closing prices 2012 &rarr; now, live price ticking · switchable to &euro;</div>
+          </div>
+        </div>
+        <div class="legend-row">
+          <div class="icon-box">&#9670;</div>
+          <div class="legend-text">
+            <div class="lname">diamonds — the moments</div>
+            <div class="ldesc">eleven real events where the two markets split: scandals, crashes, verdicts, record highs · hover one, or let the card rotate · each links to its source</div>
+          </div>
+        </div>
+        <div class="legend-row">
+          <div class="icon-box" style="font-size:11px;letter-spacing:1px;">1D&middot;MAX</div>
+          <div class="legend-text">
+            <div class="lname">controls</div>
+            <div class="ldesc">zoom buttons from one live day to fourteen years · hover any point for exact values · toggles top-right: $/&euro; and candles&harr;line</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-label">data</div>
+      <p class="disclaimer">
+      Independent academic project · Vrije Universiteit Amsterdam ·
+      Not affiliated with Meta Platforms, Inc. · Stock prices and user counts from public filings ·
+      Engagement volumes modeled and marked EST · No personal data collected or shown.
+      </p>
+      <p class="data-line">
+        source: <span>Meta IR / SEC 10-K</span> &middot; <span>S&amp;P Global via stockanalysis.com</span> &middot;
+        <span>MacroTrends</span> &middot; <span>Finnhub</span> (live quote) &middot; <span>ECB</span> (fx) &middot;
+        <span>Forrester 2014</span> &middot; <span>Rival IQ / Socialinsider</span> benchmarks &middot;
+        texture: <span>Kaggle &ldquo;Social Media Engagement Report&rdquo; / &ldquo;Instagram Analytics Dataset&rdquo;</span> (synthetic)
+        &middot; period: <span>2012 &rarr; now</span> &middot; units: <span>engagement events / min (EST) &amp; USD</span>
+      </p>
     </div>
 
   </div>
 
-  <!-- ===== DATA DISCLAIMER ===== -->
-  <footer class="disclaimer">
-    <strong>Independent academic project · Vrije Universiteit Amsterdam · Not affiliated with Meta Platforms, Inc.</strong><br><br>
-    Stock prices, revenue figures, and user counts are drawn from Meta's audited public filings.
-    Engagement volumes are modeled — Meta does not disclose them — anchored to published benchmarks
-    from Hootsuite, Sprout Social, and Buffer, and marked EST throughout.
-    A synthetic dataset adds visual texture to the charts only.
-    Values from 2026 onward and all behavioral rates are estimates.
-    No real person's data is shown, collected, or used.<br><br>
-    <em>The people are counted. The engagement is modeled.</em>
-  </footer>
+  <div class="keyhint">
+    <kbd>H</kbd> home &nbsp; <kbd>N</kbd> next &nbsp; <kbd>B</kbd> back
+  </div>
 </div>
 
-<script src="shared/config.js"></script>
-<script>
-/* ---- Prolific ID: captured from the study URL (?PROLIFIC_PID=...) ---- */
-try {
-  const pid = new URLSearchParams(location.search).get("PROLIFIC_PID");
-  if (pid) sessionStorage.setItem("md_prolific", pid);
-} catch (e) {}
-if (sessionStorage.getItem("md_prolific")) {
-  document.getElementById("prolificNote").style.display = "block";
-}
-
-function makeId() {
-  return "v-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
-}
-function proceed(anonymous) {
-  const name  = document.getElementById("nameInput").value.trim();
-  const email = document.getElementById("emailInput").value.trim();
-  const prolific = sessionStorage.getItem("md_prolific") || null;
-  const identity = anonymous || (!name && !email)
-    ? { id: makeId(), anonymous: true,  name: "",   email: "", prolificId: prolific, ts: Date.now() }
-    : { id: makeId(), anonymous: false, name, email,           prolificId: prolific, ts: Date.now() };
-  sessionStorage.setItem("md_identity", JSON.stringify(identity));
-  /* SYNC ✓ create participant in the database (keepalive survives the redirect) */
-  MD_DB.insert("participants", {
-    id: identity.id,
-    name: identity.name || null,
-    email: identity.email || null,
-    anonymous: identity.anonymous,
-    prolific_id: prolific,
-  });
-  window.location.href = "pre-survey.html";
-}
-document.getElementById("loginBtn").addEventListener("click", () => proceed(false));
-document.getElementById("anonBtn").addEventListener("click", () => proceed(true));
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && e.target.matches("input")) proceed(false);
-});
-</script>
 <script src="shared/nav.js"></script>
 </body>
 </html>
