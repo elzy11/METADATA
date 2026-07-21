@@ -117,6 +117,26 @@
   }
   .btn-anon:hover { background: var(--green-hover); }
 
+  /* ---------- keyboard controls banner above the card ---------- */
+  .card-col{ flex:0 1 396px; max-width:100%; }
+  .keys-banner{
+    margin-bottom:16px; text-align:center;
+    color:var(--secondary); letter-spacing:1px;
+  }
+  .keys-banner .kb-title{
+    display:block; font-size:13px; font-weight:700; letter-spacing:2px;
+    margin-bottom:10px; color:var(--secondary);
+  }
+  .keys-banner kbd{
+    display:inline-block; background:var(--input-bg);
+    border:1px solid var(--divider); border-radius:5px;
+    padding:7px 14px; font-family:inherit; font-size:17px; font-weight:700;
+    color:var(--text); margin:0 3px;
+  }
+  .keys-banner .kb-word{
+    font-size:14px; color:var(--secondary); margin-right:10px;
+  }
+
   /* ---------- footer ---------- */
   .disclaimer {
     font-size: 11px; color: var(--secondary); text-align: center;
@@ -166,7 +186,14 @@
     </div>
 
     <!-- ===== RIGHT ===== -->
-    <div class="card">
+    <div class="card-col">
+      <div class="keys-banner">
+        <span class="kb-title">KEYBOARD CONTROLS TO USE:</span>
+        <kbd>H</kbd> <span class="kb-word">home</span>
+        <kbd>N</kbd> <span class="kb-word">next</span>
+        <kbd>B</kbd> <span class="kb-word">back</span>
+      </div>
+      <div class="card">
       <div class="prolific-note" id="prolificNote">✓ Prolific ID detected — you're all set, just continue.</div>
       <input class="field" id="nameInput" type="text" placeholder="Name" autocomplete="off" maxlength="80">
       <input class="field" id="emailInput" type="email" placeholder="Email" autocomplete="off" maxlength="120">
@@ -180,6 +207,8 @@
       </p>
     </div>
 
+    </div>
+
   </div>
 
   <!-- ===== DATA DISCLAIMER ===== -->
@@ -191,8 +220,7 @@
     A synthetic dataset adds visual texture to the charts only.
     Values from 2026 onward and all behavioral rates are estimates.
     No real person's data is shown, collected, or used.<br><br>
-    <em>The people are counted. The engagement is modeled.</em><br><br>
-    navigate: H home · N next · B back
+    <em>The people are counted. The engagement is modeled.</em>
   </footer>
 </div>
 
