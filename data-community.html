@@ -183,6 +183,26 @@
   .share-item:hover { background: var(--hover-overlay); }
   .share-item svg { width: 18px; height: 18px; fill: var(--secondary); flex-shrink: 0; }
 
+  /* ---- moderator mode (#mod) ---- */
+  .mod-bar {
+    position: fixed; bottom: 16px; left: 16px; z-index: 300;
+    background: var(--card); border: 1px solid var(--divider); border-radius: 8px;
+    box-shadow: 0 4px 14px rgba(0,0,0,.6); padding: 10px; display: flex; gap: 8px; align-items: center;
+  }
+  .mod-bar input {
+    background: var(--bubble); border: 1px solid var(--divider); border-radius: 6px;
+    padding: 7px 10px; color: var(--text); font-family: inherit; font-size: 13px; outline: none;
+  }
+  .mod-bar button {
+    background: #E41E3F; color: #fff; font-weight: 600; font-size: 13px;
+    padding: 7px 14px; border-radius: 6px;
+  }
+  .mod-del {
+    color: #E41E3F; font-weight: 700; font-size: 13px; margin-left: 8px;
+    border: 1px solid #E41E3F; border-radius: 4px; padding: 1px 7px;
+  }
+  .mod-del:hover { background: rgba(228,30,63,.15); }
+
   /* ---- About / More tab panels ---- */
   .panel-narrow { max-width: 900px; margin: 16px auto 0; padding: 0 clamp(8px, 2vw, 40px) 40px; }
   .long-p { font-size: 15px; line-height: 1.65; margin-bottom: 12px; }
@@ -865,6 +885,7 @@ small user study measuring shifts in awareness.</p>
 
 <div class="toast" id="toast"></div>
 
+<script src="shared/config.js"></script>
 <script>
 /* ==========================================================================
    YOUR DATA COMMUNITY — frontend prototype (in-memory only)
@@ -933,6 +954,12 @@ const IDENTITY = JSON.parse(sessionStorage.getItem("md_identity") || "null");
 const VISITOR_NAME = IDENTITY && !IDENTITY.anonymous && IDENTITY.name ? IDENTITY.name : "";
 const DISPLAY_NAME = VISITOR_NAME || "Anonymous visitor";
 
+/* ---------- database (Supabase via shared/config.js) ---------- */
+const DB = window.MD_DB;
+const MY_ID = window.MD_PARTICIPANT_ID;
+const LIKE_BASE = 1;              /* display offset added to the real like count */
+let MOD_ON = false;                 /* moderator mode (open the page with #mod) */
+
 /* ---------- helpers ---------- */
 const $ = (sel, root = document) => root.querySelector(sel);
 const esc = (s) =>
@@ -974,7 +1001,9 @@ function renderPageButtons() {
 $("#pageLikeBtn").addEventListener("click", () => {
   state.iLikePage = !state.iLikePage;
   state.pageLikes += state.iLikePage ? 1 : -1;
-  /* SYNC: send page-like to backend here */
+  /* SYNC ✓ page like -> database */
+  if (state.iLikePage) DB.insert("page_likes", { participant_id: MY_ID });
+  else DB.del("page_likes", "participant_id=eq." + encodeURIComponent(MY_ID));
   renderPageButtons();
   if (state.iLikePage) toast("Thanks for liking Our Data Community 💙");
 });
@@ -1014,6 +1043,7 @@ function commentHTML(post, c) {
       <div class="comment-actions">
         <button class="${likeCls}" data-rxtrigger data-kind="comment" data-id="${c.id}" data-post="${post.id}">${likeLabel}</button>
         <span>${timeAgo(c.createdAt)}</span>
+        ${MOD_ON ? `<button class="mod-del" data-moddel="comment" data-id="${c.id}">✕</button>` : ""}
       </div>
     </div>
   </div>`;
@@ -1058,7 +1088,7 @@ function postHTML(p) {
         </div>
         <div class="post-time">${timeAgo(p.createdAt)} · <svg><use href="#ic-globe"/></svg></div>
       </div>
-      <button class="post-menu" data-toast="Post options — coming soon."><svg width="20" height="20"><use href="#ic-dots"/></svg></button>
+      ${MOD_ON ? `<button class="mod-del" data-moddel="post" data-id="${p.id}">✕ delete</button>` : `<button class="post-menu" data-toast="Post options — coming soon."><svg width="20" height="20"><use href="#ic-dots"/></svg></button>`}
     </div>
     <div class="post-body">${esc(p.text)}</div>
     <div class="rx-summary">
@@ -1123,12 +1153,17 @@ function applyReaction(kind, id, postId, rxKey) {
   if (t.myReaction === rxKey) {          // same reaction again -> remove
     t.reactions[rxKey]--;
     t.myReaction = null;
+    /* SYNC ✓ remove reaction from database */
+    DB.del("reactions", `target_type=eq.${kind}&target_id=eq.${encodeURIComponent(id)}&participant_id=eq.${encodeURIComponent(MY_ID)}`);
   } else {
     if (t.myReaction) t.reactions[t.myReaction]--;   // switch
     t.reactions[rxKey]++;
     t.myReaction = rxKey;
+    /* SYNC ✓ save/replace reaction in database */
+    DB.insert("reactions",
+      { target_type: kind, target_id: id, participant_id: MY_ID, reaction: rxKey },
+      { onConflict: "target_type,target_id,participant_id" });
   }
-  /* SYNC: send reaction to backend here */
   closePicker();
   renderFeed();
 }
@@ -1233,7 +1268,7 @@ function submitComment(postId) {
   if (!text) return;
   const post = state.posts.find((p) => p.id === postId);
   if (!post) return;
-  post.comments.push({
+  const newComment = {
     id: "c-" + Date.now() + "-" + Math.floor(Math.random() * 1e4),
     author: DISPLAY_NAME,
     admin: false,
@@ -1241,8 +1276,13 @@ function submitComment(postId) {
     text,
     reactions: { like: 0, love: 0, haha: 0, wow: 0, sad: 0, angry: 0 },
     myReaction: null,
+  };
+  post.comments.push(newComment);
+  /* SYNC ✓ comment -> database */
+  DB.insert("comments", {
+    id: newComment.id, post_id: postId, author: DISPLAY_NAME,
+    participant_id: MY_ID, body: text,
   });
-  /* SYNC: send comment to backend here */
   inp.value = "";
   renderFeed();
 }
@@ -1257,7 +1297,7 @@ $("#composerSubmit").addEventListener("click", () => {
   const ta = $("#composerText");
   const text = ta.value.trim();
   if (!text) return;
-  state.posts.push({
+  const newPost = {
     id: "p-" + Date.now(),
     pinned: false,
     author: DISPLAY_NAME,
@@ -1267,8 +1307,12 @@ $("#composerSubmit").addEventListener("click", () => {
     reactions: { like: 0, love: 0, haha: 0, wow: 0, sad: 0, angry: 0 },
     myReaction: null,
     comments: [],
+  };
+  state.posts.push(newPost);
+  /* SYNC ✓ post -> database */
+  DB.insert("posts", {
+    id: newPost.id, author: DISPLAY_NAME, participant_id: MY_ID, body: text,
   });
-  /* SYNC: send post to backend here */
   ta.value = "";
   $("#composerSubmit").disabled = true;
   $("#composerBox").classList.remove("open");
@@ -1284,30 +1328,6 @@ setInterval(() => {
   }
 }, 60000);
 
-/* ---- H / N / B keyboard navigation (shared across all pages) ---- */
-const ORDER = [
-  "index.html",
-  "intro-login.html",
-  "pre-survey.html",
-  "marketintro.html",
-  "market.html",
-  "treeintro.html",
-  "tree.html",
-  "spaceintro.html",
-  "space.html",
-  "end-survey.html",
-  "temp-thanks.html",
-  "data-community.html"
-];
-document.addEventListener("keydown", (e) => {
-  if (e.target.matches("input, textarea, select") || e.metaKey || e.ctrlKey || e.altKey) return;
-  const here = location.pathname.split("/").pop() || "index.html";
-  const i = Math.max(0, ORDER.indexOf(here));
-  const k = e.key.toLowerCase();
-  if (k === "h") location.href = ORDER[0];
-  else if (k === "n") location.href = ORDER[(i + 1) % ORDER.length];
-  else if (k === "b") location.href = ORDER[(i - 1 + ORDER.length) % ORDER.length];
-});
 
 /* ---------- tabs (Home / About / More) ---------- */
 document.querySelectorAll("[data-tabbtn]").forEach((btn) =>
@@ -1342,6 +1362,95 @@ async function copyLink(page, label) {
 $("#copyHome").addEventListener("click", () => copyLink("index.html", "Homepage"));
 $("#copyCommunity").addEventListener("click", () => copyLink("data-community.html", "Community"));
 
+/* ---------- load the shared feed from the database ---------- */
+const EMPTY_RX = () => ({ like: 0, love: 0, haha: 0, wow: 0, sad: 0, angry: 0 });
+
+async function syncFromDB() {
+  if (!DB.enabled()) return;
+  const [posts, comments, reactions, likes] = await Promise.all([
+    DB.select("posts", "select=*&order=created_at.desc&limit=300"),
+    DB.select("comments", "select=*&order=created_at.asc&limit=2000"),
+    DB.select("reactions", "select=*&limit=8000"),
+    DB.select("page_likes", "select=participant_id"),
+  ]);
+  if (!posts) return; /* network hiccup -> keep what we have */
+
+  const agg = {};
+  (reactions || []).forEach((r) => {
+    const k = r.target_type + ":" + r.target_id;
+    if (!agg[k]) agg[k] = { counts: EMPTY_RX(), mine: null };
+    agg[k].counts[r.reaction] = (agg[k].counts[r.reaction] || 0) + 1;
+    if (r.participant_id === MY_ID) agg[k].mine = r.reaction;
+  });
+  const rxOf = (kind, id) => (agg[kind + ":" + id] ? agg[kind + ":" + id].counts : EMPTY_RX());
+  const mineOf = (kind, id) => (agg[kind + ":" + id] ? agg[kind + ":" + id].mine : null);
+
+  const byPost = {};
+  (comments || []).forEach((c) => {
+    (byPost[c.post_id] = byPost[c.post_id] || []).push({
+      id: c.id, author: c.author, admin: false,
+      createdAt: new Date(c.created_at).getTime(), text: c.body,
+      reactions: rxOf("comment", c.id), myReaction: mineOf("comment", c.id),
+    });
+  });
+
+  const dbPosts = posts.map((row) => ({
+    id: row.id, pinned: false, author: row.author, admin: false,
+    createdAt: new Date(row.created_at).getTime(), text: row.body,
+    reactions: rxOf("post", row.id), myReaction: mineOf("post", row.id),
+    comments: byPost[row.id] || [],
+  }));
+
+  const pinnedLocal = state.posts.filter((x) => x.pinned);
+  const dbIds = new Set(dbPosts.map((x) => x.id));
+  const freshLocal = state.posts.filter(
+    (x) => !x.pinned && !dbIds.has(x.id) && Date.now() - x.createdAt < 60000
+  );
+  state.posts = pinnedLocal.concat(freshLocal, dbPosts);
+
+  if (likes) {
+    state.pageLikes = LIKE_BASE + likes.length;
+    state.iLikePage = likes.some((l) => l.participant_id === MY_ID);
+  }
+  renderPageButtons();
+  renderFeed();
+}
+
+setInterval(() => {
+  if (!document.activeElement || !document.activeElement.matches("[data-commentinput], #composerText")) {
+    syncFromDB();
+  }
+}, 25000);
+
+/* ---------- moderator mode: open the page as data-community.html#mod ---------- */
+if (location.hash === "#mod") {
+  const bar = document.createElement("div");
+  bar.className = "mod-bar";
+  bar.innerHTML = `<span style="font-size:13px;color:var(--secondary);">moderator</span>
+    <input type="password" id="modPw" placeholder="mod password">
+    <button id="modGo">enable</button>`;
+  document.body.appendChild(bar);
+  const saved = sessionStorage.getItem("md_modpw");
+  if (saved) { bar.querySelector("#modPw").value = saved; }
+  bar.querySelector("#modGo").addEventListener("click", () => {
+    const pw = bar.querySelector("#modPw").value.trim();
+    if (!pw) return;
+    sessionStorage.setItem("md_modpw", pw);
+    MOD_ON = true;
+    renderFeed();
+    toast("Moderator mode on — ✕ buttons delete posts/comments.");
+  });
+}
+document.addEventListener("click", (e) => {
+  const md = e.target.closest("[data-moddel]");
+  if (!md) return;
+  const pw = sessionStorage.getItem("md_modpw") || "";
+  DB.rpc("mod_delete", { t_type: md.dataset.moddel, t_id: md.dataset.id, secret: pw }).then((ok) => {
+    if (ok) { toast("Deleted."); syncFromDB(); }
+    else toast("Delete failed — wrong password?");
+  });
+});
+
 /* ---------- init ---------- */
 if (VISITOR_NAME) {
   const acc = $("#accountBtn");
@@ -1351,6 +1460,14 @@ if (VISITOR_NAME) {
 }
 renderPageButtons();
 renderFeed();
+if (DB.enabled()) {
+  $("#storageNote").textContent =
+    "Posts, comments and reactions are stored anonymously and shared with other participants.";
+  syncFromDB();
+} else {
+  console.log("[metadata] running in local mode — fill shared/config.js to enable the shared feed.");
+}
 </script>
+<script src="shared/nav.js"></script>
 </body>
 </html>
