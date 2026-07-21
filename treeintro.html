@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#2 the tree of growth — intro</title>
+<style>
+  /* same design system as metadata-login / metadata-survey */
+  :root {
+    --fb-blue: #2374E1;
+    --fb-blue-hover: #3982E4;
+    --accent: #2D88FF;
+    --bg: #18191A;
+    --card: #242526;
+    --text: #E4E6EB;
+    --secondary: #B0B3B8;
+    --divider: #3E4042;
+    --input-bg: #3A3B3C;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI Historic", "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg); color: var(--text); font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .wrap { max-width: 780px; margin: 0 auto; padding: 70px 16px 48px; }
+
+  .wordmark {
+    position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 50;
+    color: var(--accent); font-size: 19px; font-weight: 700; letter-spacing: -0.8px;
+    font-family: Helvetica, Arial, sans-serif; user-select: none;
+  }
+
+  /* ---------- title + unified subtitle ---------- */
+  .viz-title {
+    text-align: center; font-size: clamp(28px, 5vw, 38px); font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .viz-title .h { color: var(--accent); }
+  .viz-sub {
+    text-align: center; font-weight: 700; font-size: 17px; letter-spacing: .5px;
+    margin-bottom: 2px;
+  }
+  .viz-how {
+    text-align: center; color: var(--accent); font-style: italic; font-size: 15.5px;
+    margin-bottom: 22px;
+  }
+
+  /* ---------- card ---------- */
+  .card {
+    background: var(--card); border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,.5);
+    padding: 22px 28px 26px; position: relative;
+  }
+  .card-path {
+    color: var(--secondary); font-size: 13px; letter-spacing: .5px; padding-bottom: 10px;
+  }
+  .head-divider { height: 1px; background: var(--divider); margin: 0 -28px 6px; }
+
+  .sec { padding: 14px 0 2px; }
+  .sec + .sec { border-top: 1px solid var(--divider); margin-top: 14px; }
+  .sec-label {
+    color: var(--accent); font-size: 14px; font-weight: 700; letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .sec p { font-size: 16px; line-height: 1.7; color: var(--text); }
+
+  .metaphor {
+    border-left: 2px solid var(--accent);
+    padding: 4px 0 4px 14px;
+    font-size: 16.5px; line-height: 1.7;
+  }
+  .note {
+    margin-top: 10px; font-size: 0.86rem; opacity: 0.75; color: #c7c6c6; line-height: 1.7;
+  }
+
+  /* ---------- icons legend ---------- */
+  .legend { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
+  .legend-row { display: flex; align-items: center; gap: 14px; }
+  .icon-box {
+    width: 50px; height: 50px; flex-shrink: 0; border-radius: 8px;
+    border: 1px solid var(--divider); background: var(--input-bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: var(--accent);
+  }
+  .legend-text .lname { font-size: 14.5px; font-weight: 700; letter-spacing: .3px; }
+  .legend-text .ldesc { font-size: 13.5px; color: var(--secondary); margin-top: 2px; line-height: 1.5; }
+
+  /* candle mini-icon (green/red like the viz) */
+  .candles { display: flex; gap: 3px; align-items: center; height: 22px; }
+  .candles i { display: block; width: 4px; border-radius: 1px; }
+  .candles i:nth-child(1) { height: 15px; background: #00d97e; }
+  .candles i:nth-child(2) { height: 9px;  background: #ef5350; }
+  .candles i:nth-child(3) { height: 19px; background: #00d97e; }
+
+  /* ---------- disclaimer + data (kept deliberately tiny) ---------- */
+  .disclaimer {
+    font-size: 0.75rem; color: #8a8d91; line-height: 1.65; letter-spacing: .2px;
+    border-left: 1px solid var(--divider); padding-left: 12px; margin-bottom: 10px;
+  }
+  .data-line { font-size: 0.66rem; color: #6d7378; line-height: 1.8; letter-spacing: .2px; }
+  .data-line span { color: #5a8fd8; }
+
+  /* ---------- fixed corner buttons ---------- */
+  .corner-btn {
+    position: fixed; top: 16px; z-index: 50;
+    font-family: inherit; font-size: 15px; font-weight: 600;
+    padding: 9px 22px; border-radius: 6px; border: none; cursor: pointer;
+    text-decoration: none; display: inline-block; transition: background .1s;
+  }
+  .corner-btn:hover { text-decoration: none; }
+  .corner-btn.back { left: 16px; background: var(--input-bg); color: var(--text); }
+  .corner-btn.back:hover { background: #4E4F50; }
+  .corner-btn.next { right: 16px; background: var(--fb-blue); color: #fff; }
+  .corner-btn.next:hover { background: var(--fb-blue-hover); }
+
+  /* ---------- footer ---------- */
+  .keyhint{
+    margin-top:24px;color:var(--secondary);
+    font-size:11px;letter-spacing:1px;text-align:center;
+  }
+  .keyhint kbd{
+    display:inline-block;background:var(--input-bg);
+    border:1px solid var(--divider);border-radius:3px;
+    padding:1px 5px;font-family:inherit;font-size:11px;color:var(--text);
+  }
+</style>
+</head>
+<body>
+
+<a class="corner-btn back" href="market.html">‹ back</a>
+<a class="corner-btn next" href="tree.html">next ›</a>
+
+<div class="wrap">
+  <div class="wordmark">metadata</div>
+
+  <h1 class="viz-title"><span class="h">#2</span> the tree of growth</h1>
+  <div class="viz-sub">volume · mechanisms · (min)</div>
+  <div class="viz-how">what it does</div>
+
+  <div class="card">
+    <div class="card-path">~/metaphors/02_tree/intro</div>
+    <div class="head-divider"></div>
+
+    <!-- metaphor first -->
+    <div class="sec">
+      <div class="sec-label">metaphor</div>
+      <div class="metaphor">
+      growth as a tree — the tree is the activity we see: people online, posting, liking, sharing.
+      The roots are the value we never see: the system operating quietly, feeding from that activity,
+      accumulating underground.<br>
+      The tree grows with its users.<br>
+      The roots grow with what its users are worth.
+      </div>
+      <div class="note">
+        "You can't resist what you can't perceive." — Shoshana Zuboff, The Age of Surveillance Capitalism<br><br>
+        The mechanism isn't just code, it is a specific economic logic that converts human experience into a commodity.
+        Data flows downward whether or not you notice. Profit accumulates underground while the visible surface looks
+        like a fair exchange.
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-label">description</div>
+      <p>
+        Above ground: what we see<br>
+        The tree represents activity — people on Facebook and Instagram right now.
+        One node = 250,000 users online; the count follows the real daily and weekly rhythm and updates each minute.
+        Leaves are engagement events — likes, comments, shares, posts — appearing at the per-user rate of the year shown,
+        with real weekly and seasonal variation. That rate has fallen about 8&times; since 2012.<br><br>
+        Below ground: what we do not see<br>
+        The roots represent all advertising revenue Meta has ever earned, the value extracted from attention and data,
+        approximately $5.8B entering 2012, over $1 trillion today. It only keeps growing and spreading.<br><br>
+        The moving light, the energy travelling through the roots — is passive data collection.
+        It runs whether anyone engages or not. It has run since the late 2000s. It does not need your click.<br>
+        In LIVE mode it grows at the real ad-revenue rate.<br>
+        Drag the timeline to any point between 2012 and today (July 2026).
+      </p>
+    </div>
+
+    <div class="sec">
+      <div class="sec-label">icons</div>
+      <div class="legend">
+        <div class="legend-row">
+          <div class="icon-box">◎</div>
+          <div class="legend-text">
+            <div class="lname">node</div>
+            <div class="ldesc">a branch tip — 250,000 people online right now; the branch count breathes with the time of day and week</div>
+          </div>
+        </div>
+        <div class="legend-row">
+          <div class="icon-box">◇</div>
+          <div class="legend-text">
+            <div class="lname">leaf</div>
+            <div class="ldesc">an engagement event — a like, comment, share or post; it appears, falls, and is absorbed into the ground</div>
+          </div>
+        </div>
+        <div class="legend-row">
+          <div class="icon-box">═</div>
+          <div class="legend-text">
+            <div class="lname">root fabric</div>
+            <div class="ldesc">all revenue ever extracted — ≈$6.9B entering 2012, over $1.1 trillion today; it only ever grows</div>
+          </div>
+        </div>
+        <div class="legend-row">
+          <div class="icon-box">✦</div>
+          <div class="legend-text">
+            <div class="lname">the current</div>
+            <div class="ldesc">passive data collection flowing from the branches into the roots — running since the late 2000s, independent of engagement</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-label">data</div>
+      <p class="disclaimer">
+      Independent academic project · Vrije Universiteit Amsterdam ·
+      Not affiliated with Meta Platforms, Inc. · Stock prices and user counts from public filings ·
+      Engagement volumes modeled and marked EST · No personal data collected or shown.
+      </p>
+      <p class="data-line">
+        source: <span>Meta Investor Relations / SEC filings (10-K, S-1)</span> &middot;
+        <span>Rival IQ / Socialinsider engagement benchmarks</span> &middot;
+        period: <span>2012 — live</span> &middot;
+        units: <span>users online · engagement events · USD/EUR revenue</span>
+      </p>
+    </div>
+
+  </div>
+
+  <div class="keyhint">
+    <kbd>H</kbd> home &nbsp; <kbd>N</kbd> next &nbsp; <kbd>B</kbd> back
+  </div>
+</div>
+
+<script src="shared/nav.js"></script>
+</body>
+</html>

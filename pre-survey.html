@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>sign up — metadata</title>
+<title>before you begin — metadata</title>
 <style>
   :root {
     --fb-blue: #2374E1;
@@ -70,7 +70,6 @@
   .row2 { display: flex; gap: 10px; }
   .row2 > * { flex: 1; }
 
-  /* gender / single-choice pills */
   .pills { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .pill {
     display: flex; align-items: center; justify-content: space-between;
@@ -81,7 +80,6 @@
   .pills.single { grid-template-columns: 1fr; }
   #genderCustom { display: none; margin-top: 8px; }
 
-  /* checkbox chips */
   .chips { display: flex; flex-wrap: wrap; gap: 8px 8px; }
   .chip {
     display: inline-flex; align-items: center; gap: 7px;
@@ -91,14 +89,6 @@
   .chip input { accent-color: var(--accent); margin: 0; }
   .chip:has(input:checked) { border-color: var(--accent); color: var(--accent); background: rgba(45,136,255,.12); }
 
-  /* 1–5 rating matrix for the three visualizations */
-  .matrix { display: grid; grid-template-columns: 1fr repeat(5, 34px); gap: 6px 4px; align-items: center; margin-top: 4px; }
-  .matrix .mh { text-align: center; font-size: 12px; color: var(--secondary); }
-  .matrix .mname { font-size: 14px; padding-right: 6px; }
-  .matrix input { accent-color: var(--accent); width: 17px; height: 17px; justify-self: center; cursor: pointer; }
-  .scale-caption { font-size: 11.5px; color: var(--secondary); margin-top: 5px; }
-
-  /* likert 1–5 with end labels */
   .likert { display: flex; align-items: center; justify-content: space-between; gap: 4px; margin-top: 6px; }
   .likert .endlab { font-size: 11.5px; color: var(--secondary); max-width: 84px; line-height: 1.25; }
   .likert .endlab.right { text-align: right; }
@@ -114,10 +104,7 @@
   .btn-signup:hover { background: var(--green-hover); }
   .skip-bottom { display: block; margin-top: 14px; font-size: 13px; color: var(--secondary); }
   .consent { font-size: 11px; color: var(--secondary); text-align: center; margin-top: 14px; line-height: 1.45; }
-
-  .disclaimer {
-    font-size: 11px; color: var(--secondary); text-align: center; line-height: 1.5; margin-top: 24px;
-  }
+  .disclaimer { font-size: 11px; color: var(--secondary); text-align: center; line-height: 1.5; margin-top: 24px; }
 </style>
 </head>
 <body>
@@ -125,12 +112,15 @@
   <div class="wordmark">metadata</div>
 
   <div class="card">
-    <a class="skip-top" href="data-community.html">skip →</a>
-    <h1>Sign Up</h1>
-    <p class="subtitle">It's quick and easy — about 2 minutes.</p>
+    <a class="skip-top" href="marketintro.html">skip →</a>
+    <h1>Before you begin</h1>
+    <p class="subtitle">A few quick questions — about 2 minutes. Answers are anonymous.</p>
     <div class="head-divider"></div>
 
-    <form id="surveyForm" onsubmit="return false;">
+    <form id="preForm" onsubmit="return false;">
+
+      <label class="q" for="prolificId">Prolific ID / name <span class="opt">(optional — only if you were sent here via Prolific)</span></label>
+      <input class="field" id="prolificId" type="text" placeholder="Your Prolific ID or name…" data-key="prolificId" maxlength="100">
 
       <!-- ============ ABOUT YOU ============ -->
       <div class="section-title first">About you</div>
@@ -190,7 +180,20 @@
         <label class="chip">None <input type="checkbox" name="platforms" value="None"></label>
       </div>
 
-      <label class="q">2. Before this project, how aware were you of how Meta collects and profits from your data?</label>
+      <label class="q">2. How much of your social media time would you say is passive — scrolling without liking, posting or commenting?</label>
+      <div class="likert">
+        <span class="endlab">almost none — I'm always engaging</span>
+        <span class="dots">
+          <label class="dot"><input type="radio" name="passivity" value="1">1</label>
+          <label class="dot"><input type="radio" name="passivity" value="2">2</label>
+          <label class="dot"><input type="radio" name="passivity" value="3">3</label>
+          <label class="dot"><input type="radio" name="passivity" value="4">4</label>
+          <label class="dot"><input type="radio" name="passivity" value="5">5</label>
+        </span>
+        <span class="endlab right">almost all — I mostly just scroll</span>
+      </div>
+
+      <label class="q">3. How aware are you of how Meta collects and profits from your data?</label>
       <div class="likert">
         <span class="endlab">not aware at all</span>
         <span class="dots">
@@ -203,105 +206,44 @@
         <span class="endlab right">very aware</span>
       </div>
 
-      <!-- ============ THE THREE VISUALIZATIONS ============ -->
-      <div class="section-title">The three visualizations</div>
-
-      <label class="q">3. How easy was each one to understand?</label>
-      <div class="matrix">
-        <span></span><span class="mh">1</span><span class="mh">2</span><span class="mh">3</span><span class="mh">4</span><span class="mh">5</span>
-        <span class="mname">The Attention Market</span>
-        <input type="radio" name="ease-attention" value="1"><input type="radio" name="ease-attention" value="2"><input type="radio" name="ease-attention" value="3"><input type="radio" name="ease-attention" value="4"><input type="radio" name="ease-attention" value="5">
-        <span class="mname">The Growth</span>
-        <input type="radio" name="ease-growth" value="1"><input type="radio" name="ease-growth" value="2"><input type="radio" name="ease-growth" value="3"><input type="radio" name="ease-growth" value="4"><input type="radio" name="ease-growth" value="5">
-        <span class="mname">The User Space</span>
-        <input type="radio" name="ease-userspace" value="1"><input type="radio" name="ease-userspace" value="2"><input type="radio" name="ease-userspace" value="3"><input type="radio" name="ease-userspace" value="4"><input type="radio" name="ease-userspace" value="5">
-      </div>
-      <div class="scale-caption">1 = hard to understand · 5 = easy to understand</div>
-
-      <label class="q">4. How strongly did each one affect you emotionally?</label>
-      <div class="matrix">
-        <span></span><span class="mh">1</span><span class="mh">2</span><span class="mh">3</span><span class="mh">4</span><span class="mh">5</span>
-        <span class="mname">The Attention Market</span>
-        <input type="radio" name="impact-attention" value="1"><input type="radio" name="impact-attention" value="2"><input type="radio" name="impact-attention" value="3"><input type="radio" name="impact-attention" value="4"><input type="radio" name="impact-attention" value="5">
-        <span class="mname">The Growth</span>
-        <input type="radio" name="impact-growth" value="1"><input type="radio" name="impact-growth" value="2"><input type="radio" name="impact-growth" value="3"><input type="radio" name="impact-growth" value="4"><input type="radio" name="impact-growth" value="5">
-        <span class="mname">The User Space</span>
-        <input type="radio" name="impact-userspace" value="1"><input type="radio" name="impact-userspace" value="2"><input type="radio" name="impact-userspace" value="3"><input type="radio" name="impact-userspace" value="4"><input type="radio" name="impact-userspace" value="5">
-      </div>
-      <div class="scale-caption">1 = didn't affect me · 5 = affected me strongly</div>
-
-      <label class="q">5. Which one will you still remember tomorrow?</label>
+      <label class="q">4. How does Meta make most of its money?</label>
       <div class="pills single">
-        <label class="pill">The Attention Market <input type="radio" name="remember" value="The Attention Market"></label>
-        <label class="pill">The Growth <input type="radio" name="remember" value="The Growth"></label>
-        <label class="pill">The User Space <input type="radio" name="remember" value="The User Space"></label>
-        <label class="pill">honestly, none of them <input type="radio" name="remember" value="none"></label>
+        <label class="pill">Subscription fees from users <input type="radio" name="bizmodel" value="subscriptions"></label>
+        <label class="pill">Selling user data to third parties <input type="radio" name="bizmodel" value="selling data"></label>
+        <label class="pill">Showing targeted ads based on user behaviour <input type="radio" name="bizmodel" value="targeted ads"></label>
+        <label class="pill">In-app purchases and digital goods <input type="radio" name="bizmodel" value="in-app purchases"></label>
+        <label class="pill">I don't know <input type="radio" name="bizmodel" value="don't know"></label>
       </div>
 
-      <label class="q" for="whyAffected">6. The one that affected you most — why? <span class="opt">(optional)</span></label>
-      <textarea class="field" id="whyAffected" data-key="whyAffected" maxlength="600" placeholder="A few words are enough…"></textarea>
-
-      <!-- ============ AFTER THE PROJECT ============ -->
-      <div class="section-title">After the project</div>
-
-      <label class="q" for="message">7. In one sentence: what do you think this project is trying to say?</label>
-      <textarea class="field" id="message" data-key="message" maxlength="600" placeholder="There is no wrong answer."></textarea>
-
-      <label class="q">8. Which of these did you feel?</label>
-      <div class="chips">
-        <label class="chip">surprised <input type="checkbox" name="emotions" value="surprised"></label>
-        <label class="chip">concerned <input type="checkbox" name="emotions" value="concerned"></label>
-        <label class="chip">angry <input type="checkbox" name="emotions" value="angry"></label>
-        <label class="chip">indifferent <input type="checkbox" name="emotions" value="indifferent"></label>
-        <label class="chip">curious <input type="checkbox" name="emotions" value="curious"></label>
-        <label class="chip">overwhelmed <input type="checkbox" name="emotions" value="overwhelmed"></label>
-        <label class="chip">motivated <input type="checkbox" name="emotions" value="motivated"></label>
-        <label class="chip">skeptical <input type="checkbox" name="emotions" value="skeptical"></label>
-      </div>
-
-      <label class="q">9. "This project changed how I think about my data."</label>
+      <label class="q">5. How concerned are you about your personal data being used commercially?</label>
       <div class="likert">
-        <span class="endlab">strongly disagree</span>
+        <span class="endlab">not concerned</span>
         <span class="dots">
-          <label class="dot"><input type="radio" name="changed" value="1">1</label>
-          <label class="dot"><input type="radio" name="changed" value="2">2</label>
-          <label class="dot"><input type="radio" name="changed" value="3">3</label>
-          <label class="dot"><input type="radio" name="changed" value="4">4</label>
-          <label class="dot"><input type="radio" name="changed" value="5">5</label>
+          <label class="dot"><input type="radio" name="concern" value="1">1</label>
+          <label class="dot"><input type="radio" name="concern" value="2">2</label>
+          <label class="dot"><input type="radio" name="concern" value="3">3</label>
+          <label class="dot"><input type="radio" name="concern" value="4">4</label>
+          <label class="dot"><input type="radio" name="concern" value="5">5</label>
         </span>
-        <span class="endlab right">strongly agree</span>
-      </div>
-
-      <label class="q">10. Will you do anything differently after today?</label>
-      <div class="chips">
-        <label class="chip">check my ad settings <input type="checkbox" name="actions" value="check ad settings"></label>
-        <label class="chip">limit my screen time <input type="checkbox" name="actions" value="limit screen time"></label>
-        <label class="chip">download my data <input type="checkbox" name="actions" value="download my data"></label>
-        <label class="chip">delete an account <input type="checkbox" name="actions" value="delete an account"></label>
-        <label class="chip">talk about this with someone <input type="checkbox" name="actions" value="talk about it"></label>
-        <label class="chip">probably nothing <input type="checkbox" name="actions" value="probably nothing"></label>
+        <span class="endlab right">very concerned</span>
       </div>
 
       <div class="submit-zone">
-        <button class="btn-signup" id="submitBtn">Sign Up</button>
-        <a class="skip-bottom" href="data-community.html">skip this survey →</a>
+        <button class="btn-signup" id="submitBtn">Begin →</button>
+        <a class="skip-bottom" href="marketintro.html">skip and go straight in →</a>
       </div>
       <div class="consent">By continuing, you agree to participate in this study for educational and research purposes. Your responses are anonymized.</div>
     </form>
   </div>
 
   <footer class="disclaimer">
-    This page is an academic prototype for a thesis project and is not affiliated with Meta Platforms, Inc.<br>
+    Independent academic project · Vrije Universiteit Amsterdam · Not affiliated with Meta Platforms, Inc.<br>
     All answers are analyzed anonymously · educational purposes only · no personal data is collected or shared · no data will be sold.<br>
     navigate: H home · N next · B back
   </footer>
 </div>
 
 <script>
-/* Survey responses are kept in sessionStorage for now; the Supabase backend
-   will later receive them at the SYNC point below. */
-
-// show/hide the custom gender text input
 document.querySelectorAll('input[name="gender"]').forEach((r) =>
   r.addEventListener("change", () => {
     document.getElementById("genderCustom").style.display =
@@ -327,10 +269,8 @@ document.getElementById("submitBtn").addEventListener("click", () => {
     gender = custom ? "Custom: " + custom : "Custom";
   }
 
-  const identity = JSON.parse(sessionStorage.getItem("md_identity") || "null");
-
-  const response = {
-    participant: identity,
+  const baseline = {
+    prolificId: byKey.prolificId || null,
     submittedAt: new Date().toISOString(),
     demographics: {
       age: byKey.age || null,
@@ -343,42 +283,37 @@ document.getElementById("submitBtn").addEventListener("click", () => {
     },
     baseline: {
       platforms: checkVals("platforms"),
-      priorAwareness: radioVal("awareness"),
-    },
-    visualizations: {
-      ease: {
-        "The Attention Market": radioVal("ease-attention"),
-        "The Growth": radioVal("ease-growth"),
-        "The User Space": radioVal("ease-userspace"),
-      },
-      impact: {
-        "The Attention Market": radioVal("impact-attention"),
-        "The Growth": radioVal("impact-growth"),
-        "The User Space": radioVal("impact-userspace"),
-      },
-      willRemember: radioVal("remember"),
-      whyAffected: byKey.whyAffected || null,
-    },
-    reflection: {
-      projectMessage: byKey.message || null,
-      emotions: checkVals("emotions"),
-      changedThinking: radioVal("changed"),
-      intendedActions: checkVals("actions"),
+      passivity: radioVal("passivity"),
+      awareness: radioVal("awareness"),
+      bizModel: radioVal("bizmodel"),
+      concern: radioVal("concern"),
     },
   };
 
-  /* SYNC: send survey response to backend here */
-  sessionStorage.setItem("md_survey", JSON.stringify(response));
-  console.log("[metadata] survey response:", response);
+  /* SYNC: send pre-survey to backend here */
+  sessionStorage.setItem("md_baseline", JSON.stringify(baseline));
+  console.log("[metadata] pre-survey:", baseline);
 
-  window.location.href = "data-community.html";
+  window.location.href = "marketintro.html";
 });
 
-/* ---- H / N / B keyboard navigation (shared across all pages) ---- */
-const ORDER = ["index.html","market.html","space.html","tree.html","metadata-login.html","metadata-survey.html","data-community.html"];
+const ORDER = [
+  "index.html",
+  "intro-login.html",
+  "pre-survey.html",
+  "marketintro.html",
+  "market.html",
+  "treeintro.html",
+  "tree.html",
+  "spaceintro.html",
+  "space.html",
+  "end-survey.html",
+  "temp-thanks.html",
+  "data-community.html"
+];
 document.addEventListener("keydown", (e) => {
   if (e.target.matches("input, textarea, select") || e.metaKey || e.ctrlKey || e.altKey) return;
-  const here = location.pathname.split("/").pop() || "index.html";
+  const here = location.pathname.split("/").pop() || "metadata-pre-survey.html";
   const i = Math.max(0, ORDER.indexOf(here));
   const k = e.key.toLowerCase();
   if (k === "h") location.href = ORDER[0];

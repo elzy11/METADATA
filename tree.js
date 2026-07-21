@@ -1,12 +1,12 @@
 /*
-  THE GROWING TREE 
+  THE GROWING TREE
 */
 "use strict";
 
 /* ================= MetaData bootstrap (module or fallback) ================= */
 const MD=(function(){
-  if(window.MetaData&&window.MetaData.version>=5)return window.MetaData;
-  console.warn('MetaData v5+ not found — extraction_tree.js running on built-in fallback data.');
+  if(window.MetaData&&window.MetaData.version>=7)return window.MetaData;
+  console.warn('MetaData v7+ not found — tree.js running on built-in fallback data.');
   const YEAR0=2012;
   const DAU_B  =[0.62,0.79,0.97,1.15,1.35,1.57,1.82,2.26,2.60,2.82,2.96,3.19,3.35,3.57,3.63];
   const ARPU_Q =[1.54,2.14,2.81,3.73,4.83,6.18,7.37,8.52,10.14,11.57,10.86,13.12,14.25,16.78,19.50];
@@ -17,6 +17,12 @@ const MD=(function(){
   const REV_YR=REV_B.map(v=>v*1e9);
   const REV_CUM=[0];
   for(let i=1;i<REV_YR.length;i++)REV_CUM[i]=REV_CUM[i-1]+(REV_YR[i-1]+REV_YR[i])/2;
+  /* v7: advertising revenue only (10-K line item; pre-2012 per SEC Form S-1 ad split) */
+  const AD_REV_B=[4.28,6.99,11.49,17.08,26.89,39.94,55.01,69.66,84.17,114.93,113.64,131.95,160.63,196.4,239.0];
+  const AD_REV_YR=AD_REV_B.map(v=>v*1e9);
+  const AD_REV_CUM=[0];
+  for(let i=1;i<AD_REV_YR.length;i++)AD_REV_CUM[i]=AD_REV_CUM[i-1]+(AD_REV_YR[i-1]+AD_REV_YR[i])/2;
+  const AD_REV_PRE2012=6.25e9;
   const clamp=(v,a,b)=>(v<a?a:v>b?b:v);
   function series(arr,yf){
     const x=clamp(yf-YEAR0,0,arr.length-1);
@@ -29,25 +35,56 @@ const MD=(function(){
   let RM=0;const ST=480;
   for(let i=0;i<ST;i++)RM+=rhythmRaw((i/ST)*24)/ST;
   function rhythm(h){return rhythmRaw(h)/RM;}
-  const WEEKEND_FACTOR=0.72, WEEK_NORM=(5+2*WEEKEND_FACTOR)/7;
-  function dayFactor(dow){return ((dow===0||dow===6)?WEEKEND_FACTOR:1)/WEEK_NORM;}
+  /* v6: year-aware weekly curve (Tue/Wed peak, weekend trough; contrast
+     fades over the years, flattened during COVID) — weekly mean = 1 */
+  const DAILY_MULT_BASE=[0.72,0.88,1.00,1.00,0.96,0.82,0.68];
+  function weekBlend(yf){
+    const passive=clamp(1.0-(yf-2012)*(0.35/12),0.65,1.0);
+    let covid=1.0;
+    if(yf>=2020&&yf<2022)covid=0.60;
+    else if(yf>=2022&&yf<2023)covid=0.80;
+    return Math.min(passive,covid);
+  }
+  function dayFactor(dow,yf){
+    const b=weekBlend(yf===undefined?2026:yf);
+    let mean=0;
+    for(let i=0;i<7;i++)mean+=(1+(DAILY_MULT_BASE[i]-1)*b)/7;
+    return (1+(DAILY_MULT_BASE[dow]-1)*b)/mean;
+  }
+  const SEASONAL_Q=[0.965,0.985,1.010,1.040];
+  function seasonalQ(yf){
+    const q=clamp(Math.floor(((yf%1)+1)%1*4),0,3);
+    return SEASONAL_Q[q];
+  }
+  function eventMult(yf){
+    if(yf>=2018.0&&yf<2018.75)return 0.95;
+    if(yf>=2020.25&&yf<2020.5)return 1.12;
+    return 1.0;
+  }
   return {
-    version:5,YEAR0,estFrom:2026,
+    version:7,YEAR0,estFrom:2026,
     DAU_B,ARPU_Q,ENG_PCT,INT_DAY,MIN_DAY,REV_B,REV_YR,REV_CUM,
-    series,rhythm,dayFactor,
+    series,rhythm,dayFactor,weekBlend,seasonalQ,eventMult,
     rhythmWeek(h,dow){return rhythm(h)*dayFactor(dow);},
     concurrent(yf,h){return series(DAU_B,yf)*1e9*(series(MIN_DAY,yf)/1440)*rhythm(h);},
     eventsPerSec(yf){return series(DAU_B,yf)*1e9*series(INT_DAY,yf)/86400;},
     eventsPerActiveSec(yf){return series(INT_DAY,yf)/(series(MIN_DAY,yf)*60);},
     eventsPerMinLive(yf,h,dow){
-      const df=(dow===undefined)?1:dayFactor(dow);
+      const df=(dow===undefined)?1:dayFactor(dow,yf);
       return series(DAU_B,yf)*1e9*(series(MIN_DAY,yf)/1440)*rhythm(h)*df
-             *(series(INT_DAY,yf)/(series(MIN_DAY,yf)*60))*60;
+             *(series(INT_DAY,yf)/(series(MIN_DAY,yf)*60))*60
+             *seasonalQ(yf)*eventMult(yf);
     },
     revPerSec(yf){return series(REV_YR,yf)/31557600;},
     revCum(yf){return series(REV_CUM,yf);},
     REV_PRE2012:6.94e9,
     revCumTotal(yf){return 6.94e9+series(REV_CUM,yf);},
+    AD_REV_B,AD_REV_YR,AD_REV_CUM,AD_REV_PRE2012,
+    adRevYr(yf){return series(AD_REV_YR,yf);},
+    adRevPerSec(yf){return series(AD_REV_YR,yf)/31557600;},
+    adRevCum(yf){return series(AD_REV_CUM,yf);},
+    adRevCumTotal(yf){return AD_REV_PRE2012+series(AD_REV_CUM,yf);},
+    adShare(yf){return series(AD_REV_YR,yf)/series(REV_YR,yf);},
     arpuQuarter(yf){return series(ARPU_Q,yf);},
     passivity(yf){return 1-0.38*Math.pow(series(ENG_PCT,yf)/ENG_PCT[0],0.8);},
     methodsCurve(yf){
@@ -69,11 +106,13 @@ const MD=(function(){
 /* ================= derived constants ================= */
 const NODE_SCALE=250000;                       /* 1 node = 250k users online */
 const YEND=MD.YEAR0+MD.DAU_B.length-1;         /* 2026 */
-const REVSEC_END=MD.revPerSec(YEND);
-const CUM_END=MD.revCumTotal(YEND);
-const CUM_2012=MD.revCumTotal(2012);
+/* v7: the extraction economy is ADVERTISING revenue only —
+   the value pulled from attention & data, excluding hardware etc. */
+const REVSEC_END=MD.adRevPerSec(YEND);
+const CUM_END=MD.adRevCumTotal(YEND);
+const CUM_2012=MD.adRevCumTotal(2012);
 const DAU_2012=MD.series(MD.DAU_B,2012)*1e9;
-const REVSEC_2012=MD.revPerSec(2012);
+const REVSEC_2012=MD.adRevPerSec(2012);
 const ENG_2012=MD.series(MD.ENG_PCT,2012);
 
 function nowFracYear(){
@@ -89,11 +128,12 @@ function metrics(fy){
     intd:MD.series(MD.INT_DAY,fy),
     mind:MD.series(MD.MIN_DAY,fy),
     hour:h,dow,
-    sessions:MD.concurrent(fy,h)*MD.dayFactor(dow),   /* weekday-aware */
-    revSec:MD.revPerSec(fy),
+    sessions:MD.concurrent(fy,h)*MD.dayFactor(dow,fy), /* year-aware weekly curve */
+    revSec:MD.adRevPerSec(fy),                         /* ad revenue only */
     evSec:MD.eventsPerSec(fy),
     evMinLive:MD.eventsPerMinLive(fy,h,dow),
-    cum:MD.revCumTotal(fy),
+    seas:MD.seasonalQ(fy)*MD.eventMult(fy),            /* Q4/Q1 + 2018 dip, COVID surge */
+    cum:MD.adRevCumTotal(fy),                          /* lifetime ad revenue */
     pass:MD.passivity(fy),
     est:fy>=MD.estFrom,
   };
@@ -368,7 +408,8 @@ function drainFromNode(i){
 /* ================= STATE ================= */
 let leaves=[],ripples=[],rRunners=[],rootEnergy=0,evCarry=0;
 let rootAliveLen=0,bgPulse=0,rootM=0;
-let live=false,viewFy=2012,euro=false,intro=true;   /* intro: ride 2012 → now */
+let live=false,viewFy=2012,euro=true,intro=true;   /* intro: ride 2012 → now; € default */
+let paused=false;
 const NOWFY=nowFracYear();
 const scrub=document.getElementById('scrub');
 scrub.max=NOWFY.toFixed(2);scrub.value="2012";
@@ -445,19 +486,22 @@ function minuteTick(m){
 }
 
 /* ================= MAIN LOOP ================= */
+const MONTHS=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 let lastT=performance.now(),tGlobal=0,sweepPh=Math.random(),extracted=0;
 function frame(now){
   const dt=Math.min(0.05,(now-lastT)/1000);lastT=now;tGlobal+=dt;
-  if(intro){
-    viewFy=Math.min(NOWFY,viewFy+dt*(NOWFY-2012)/20);
-    scrub.value=viewFy;
-    if(viewFy>=NOWFY-0.001){intro=false;setLive(true);}
-  }else if(live)viewFy=nowFracYear();
+  if(!paused){
+    if(intro){
+      viewFy=Math.min(NOWFY,viewFy+dt*(NOWFY-2012)/20);
+      scrub.value=viewFy;
+      if(viewFy>=NOWFY-0.001){intro=false;setLive(true);}
+    }else if(live)viewFy=nowFracYear();
+  }
   const m=metrics(viewFy);
   minuteTick(m);
   const mc=MD.methodsCurve(viewFy);
   const revI=Math.sqrt(m.revSec/REVSEC_END);   /* current volume ∝ √revenue */
-  extracted+=m.revSec*dt;                      /* dollars earned while open  */
+  if(!paused)extracted+=m.revSec*dt;           /* dollars earned while open  */
   const baseX=W*0.5;
 
   ctx.fillStyle='#060d15';ctx.fillRect(0,0,W,H);
@@ -488,8 +532,8 @@ function frame(now){
     if(s.alive&&s.cur>=s.len-0.01)liveNodes++;
   }
 
-  /* ---- roots: area ∝ LIFETIME revenue (cumulative since 2004) ----
-     LIVE adds the real dollars earned while the page has been open —
+  /* ---- roots: area ∝ LIFETIME AD revenue (cumulative since 2004) ----
+     LIVE adds the real ad dollars earned while the page has been open —
      the fabric and the EXTRACTED counter are the same physical thing */
   const cumNow=m.cum+(live?extracted:0);
   const rootTarget=Math.min(TREE.rootTotal,
@@ -665,8 +709,8 @@ function frame(now){
     }
   }
 
-  /* ---- engagement leaves (per-user rate; absorption pulses the bg) ---- */
-  const leafRate=6.5*(m.eng/ENG_2012);
+  /* ---- engagement leaves (per-user rate × seasonality; absorption pulses the bg) ---- */
+  const leafRate=6.5*(m.eng/ENG_2012)*m.seas;
   evCarry+=leafRate*dt;
   while(evCarry>=1){evCarry--;if(leaves.length<400)fireEvent();}
   ctx.lineWidth=1;
@@ -728,31 +772,36 @@ function frame(now){
     return pct>=0?` <span class="up">▲${t}</span>`:` <span class="dn">▼${t}</span>`;
   };
   const mult=v=>` <span class="mult">×${v>=100?v.toFixed(0):v.toFixed(1)}</span>`;
+  const pctSince=v=>
+    {
+  const p=(v-1)*100;
+  const t=Math.abs(p)>=100?p.toFixed(0):p.toFixed(1);
+  return p>=0?` <span class="up">▲${t}%</span>`:` <span class="dn">▼${Math.abs(t)}%</span>`;
+};
   const uMult=m.dau/base2012.u;
-  const K12=Math.max(1,Math.round(MD.concurrent(2012,m.hour)*MD.dayFactor(m.dow)/NODE_SCALE));
+  const K12=Math.max(1,Math.round(MD.concurrent(2012,m.hour)*MD.dayFactor(m.dow,2012)/NODE_SCALE));
   const nMult=Math.max(1,K)/K12;
   const cumMult=cumNow/base2012.cum;
+  const engMult=m.eng/ENG_2012;
   const rvMult=m.revSec/base2012.rev;
-  document.getElementById('hSess').innerHTML=fmt(sessNow)+arrow(minSessions,prevMinSessions)+mult(uMult)+est;
-  document.getElementById('hNodes').innerHTML=fmt(liveNodes)+mult(nMult);
-  document.getElementById('hRoots').innerHTML=fmt(rootWireCount)+mult(cumMult);
-  document.getElementById('hRev').innerHTML=money(m.revSec*60)+arrow(minRev,prevMinRev)+mult(rvMult)+est;
-  document.getElementById('hEv').innerHTML=fmt(m.evMinLive)+est;
+  document.getElementById('hSess').innerHTML=fmt(sessNow)+est+pctSince(uMult);
+  document.getElementById('hNodes').innerHTML=fmt(liveNodes)+pctSince(nMult);
+  document.getElementById('hRoots').innerHTML=fmt(rootWireCount)+pctSince(cumMult);
+  document.getElementById('hRev').innerHTML=moneyBig(cumNow)+est+pctSince(cumMult);
+  document.getElementById('hEv').innerHTML=fmt(m.evMinLive)+est+pctSince(engMult);
   document.getElementById('hEng').innerHTML=m.eng.toFixed(2)+'% <span class="est">per user</span>';
   document.getElementById('hPas').innerHTML=(m.pass*100).toFixed(0)+'% <span class="est">EST</span>';
   document.getElementById('hExt').innerHTML=money(extracted);
-  document.getElementById('hGrow').textContent='× = growth since 2012';
-  document.getElementById('hScale').textContent=
-    `1 node = ${fmt(NODE_SCALE)} users · fabric = ${moneyBig(cumNow)} extracted since 2004`;
   const lgLeaf=document.getElementById('lgLeaf');
   if(lgLeaf)lgLeaf.textContent='≈'+fmt(m.evSec/Math.max(0.01,leafRate));
   const lgRatio=document.getElementById('lgRatio');
   if(lgRatio)lgRatio.textContent=moneyBig(cumNow);
   const d2=new Date();
   document.getElementById('stamp').innerHTML= live
-    ? `<span class="live">● LIVE</span> — ${d2.toLocaleTimeString()} local<br>${d2.toLocaleDateString()}`
-    : `<span class="hist">◆ HISTORICAL</span> — ${Math.floor(viewFy)} ${(viewFy%1)>=0.5?'H2':'H1'}`;
-  document.getElementById('yr').textContent=viewFy.toFixed(1);
+    ? `<span class="live">● GLOBAL LIVE</span> — ${d2.toLocaleTimeString()} local<br>${d2.toLocaleDateString()}`
+    : `<span class="hist">◆ GLOBAL HISTORICAL</span> — ${Math.floor(viewFy)} ${(viewFy%1)>=0.5?'H2':'H1'}`;
+  const mi=Math.min(11,Math.floor((viewFy%1)*12));
+  document.getElementById('yr').textContent=Math.floor(viewFy)+' '+MONTHS[mi];
   requestAnimationFrame(frame);
 }
 
@@ -792,7 +841,16 @@ document.querySelectorAll('.tg').forEach(b=>{
     b.textContent=card.classList.contains('closed')?'+':'–';
   };
 });
+document.querySelectorAll('.chip').forEach(c=>{
+  c.onclick=()=>{
+    const card=c.parentElement;
+    card.classList.remove('closed');
+    const b=card.querySelector('.tg');
+    if(b)b.textContent='–';
+  };
+});
 addEventListener('keydown',e=>{
+  if(e.code==='Space'){e.preventDefault();paused=!paused;}
   if(e.key==='ArrowLeft')document.getElementById('bBack').click();
   if(e.key==='ArrowRight')document.getElementById('bFwd').click();
 });

@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>survey — metadata</title>
+<style>
+  :root {
+    --fb-blue: #2374E1;
+    --accent: #2D88FF;
+    --green: #42B72A;
+    --green-hover: #36A420;
+    --bg: #18191A;
+    --card: #242526;
+    --text: #E4E6EB;
+    --secondary: #B0B3B8;
+    --divider: #3E4042;
+    --input-bg: #3A3B3C;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI Historic", "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg); color: var(--text); font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  button { font-family: inherit; border: none; cursor: pointer; }
+
+  .wrap { max-width: 500px; margin: 0 auto; padding: 28px 16px 48px; }
+  .wordmark {
+    color: var(--accent); font-size: 34px; font-weight: 700; letter-spacing: -1.5px;
+    font-family: Helvetica, Arial, sans-serif; text-align: center; margin-bottom: 16px;
+    user-select: none;
+  }
+  .card {
+    background: var(--card); border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,.5);
+    padding: 18px 18px 24px; position: relative;
+  }
+  .skip-top {
+    position: absolute; top: 16px; right: 16px; font-size: 12px; color: var(--secondary);
+  }
+  h1 { font-size: 25px; font-weight: 700; }
+  .subtitle { color: var(--secondary); font-size: 15px; margin: 2px 0 14px; }
+  .head-divider { height: 1px; background: var(--divider); margin: 0 -18px 4px; }
+
+  .section-title {
+    font-size: 15px; font-weight: 700; margin: 22px 0 2px; padding-top: 16px;
+    border-top: 1px solid var(--divider);
+  }
+  .section-title.first { border-top: none; padding-top: 8px; }
+  .section-note { font-size: 12px; color: var(--secondary); margin-bottom: 4px; }
+
+  .q { display: block; font-size: 13px; font-weight: 600; color: var(--secondary); margin: 14px 0 6px; }
+  .q .opt { font-weight: 400; }
+
+  .field, select.field, textarea.field {
+    width: 100%; background: var(--input-bg); border: 1px solid var(--divider);
+    border-radius: 6px; padding: 10px 12px; font-size: 15px; font-family: inherit;
+    color: var(--text); outline: none;
+  }
+  .field::placeholder { color: var(--secondary); }
+  .field:focus { border-color: var(--accent); }
+  select.field { appearance: none; -webkit-appearance: none; background-image:
+    linear-gradient(45deg, transparent 50%, var(--secondary) 50%),
+    linear-gradient(135deg, var(--secondary) 50%, transparent 50%);
+    background-position: calc(100% - 18px) 55%, calc(100% - 13px) 55%;
+    background-size: 5px 5px; background-repeat: no-repeat; }
+  textarea.field { resize: vertical; min-height: 64px; }
+
+  .pills { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .pill {
+    display: flex; align-items: center; justify-content: space-between;
+    border: 1px solid var(--divider); border-radius: 6px; padding: 9px 12px;
+    font-size: 15px; cursor: pointer; background: var(--input-bg);
+  }
+  .pill input { accent-color: var(--accent); }
+  .pills.single { grid-template-columns: 1fr; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px 8px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    border: 1px solid var(--divider); border-radius: 18px; padding: 7px 13px;
+    font-size: 14px; cursor: pointer; background: var(--input-bg); user-select: none;
+  }
+  .chip input { accent-color: var(--accent); margin: 0; }
+  .chip:has(input:checked) { border-color: var(--accent); color: var(--accent); background: rgba(45,136,255,.12); }
+
+  .matrix { display: grid; grid-template-columns: 1fr repeat(5, 34px); gap: 6px 4px; align-items: center; margin-top: 4px; }
+  .matrix .mh { text-align: center; font-size: 12px; color: var(--secondary); }
+  .matrix .mname { font-size: 14px; padding-right: 6px; }
+  .matrix input { accent-color: var(--accent); width: 17px; height: 17px; justify-self: center; cursor: pointer; }
+  .scale-caption { font-size: 11.5px; color: var(--secondary); margin-top: 5px; }
+
+  .likert { display: flex; align-items: center; justify-content: space-between; gap: 4px; margin-top: 6px; }
+  .likert .endlab { font-size: 11.5px; color: var(--secondary); max-width: 84px; line-height: 1.25; }
+  .likert .endlab.right { text-align: right; }
+  .likert .dots { display: flex; gap: 18px; }
+  .likert .dot { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 12px; color: var(--secondary); cursor: pointer; }
+  .likert .dot input { accent-color: var(--accent); width: 17px; height: 17px; cursor: pointer; }
+
+  .submit-zone { margin-top: 26px; text-align: center; }
+  .btn-signup {
+    background: var(--green); color: #fff; font-size: 18px; font-weight: 700;
+    padding: 11px 54px; border-radius: 6px; transition: background .1s;
+  }
+  .btn-signup:hover { background: var(--green-hover); }
+  .skip-bottom { display: block; margin-top: 14px; font-size: 13px; color: var(--secondary); }
+  .consent { font-size: 11px; color: var(--secondary); text-align: center; margin-top: 14px; line-height: 1.45; }
+  .disclaimer { font-size: 11px; color: var(--secondary); text-align: center; line-height: 1.5; margin-top: 24px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="wordmark">metadata</div>
+
+  <div class="card">
+    <a class="skip-top" href="temp-thanks.html">skip →</a>
+    <h1>After the project</h1>
+    <p class="subtitle">A few questions — about 3 minutes. There are no right or wrong answers.</p>
+    <div class="head-divider"></div>
+
+    <form id="surveyForm" onsubmit="return false;">
+
+      <label class="q" for="prolificId">Prolific ID / name <span class="opt">(optional — only if you were sent here via Prolific)</span></label>
+      <input class="field" id="prolificId" type="text" placeholder="Your Prolific ID or name…" data-key="prolificId" maxlength="100">
+
+      <!-- ============ ABOUT THE PROJECT ============ -->
+      <div class="section-title first">About the project</div>
+
+      <label class="q" for="message">1. In one sentence — what do you think this project is trying to say?</label>
+      <textarea class="field" id="message" data-key="message" maxlength="600" placeholder="There is no wrong answer."></textarea>
+
+      <label class="q">2. Does Meta collect data when you scroll without liking, posting or commenting?</label>
+      <div class="pills single">
+        <label class="pill">Yes <input type="radio" name="passiveData" value="yes"></label>
+        <label class="pill">No <input type="radio" name="passiveData" value="no"></label>
+        <label class="pill">I'm not sure <input type="radio" name="passiveData" value="unsure"></label>
+      </div>
+
+      <label class="q">3. Which of these did you feel?</label>
+      <div class="chips">
+        <label class="chip">surprised <input type="checkbox" name="emotions" value="surprised"></label>
+        <label class="chip">concerned <input type="checkbox" name="emotions" value="concerned"></label>
+        <label class="chip">angry <input type="checkbox" name="emotions" value="angry"></label>
+        <label class="chip">indifferent <input type="checkbox" name="emotions" value="indifferent"></label>
+        <label class="chip">curious <input type="checkbox" name="emotions" value="curious"></label>
+        <label class="chip">overwhelmed <input type="checkbox" name="emotions" value="overwhelmed"></label>
+        <label class="chip">motivated <input type="checkbox" name="emotions" value="motivated"></label>
+        <label class="chip">skeptical <input type="checkbox" name="emotions" value="skeptical"></label>
+      </div>
+
+      <label class="q">4. "This project changed how I think about my data."</label>
+      <div class="likert">
+        <span class="endlab">strongly disagree</span>
+        <span class="dots">
+          <label class="dot"><input type="radio" name="changedThinking" value="1">1</label>
+          <label class="dot"><input type="radio" name="changedThinking" value="2">2</label>
+          <label class="dot"><input type="radio" name="changedThinking" value="3">3</label>
+          <label class="dot"><input type="radio" name="changedThinking" value="4">4</label>
+          <label class="dot"><input type="radio" name="changedThinking" value="5">5</label>
+        </span>
+        <span class="endlab right">strongly agree</span>
+      </div>
+
+      <label class="q">5. "I feel differently about the time I spend on social media."</label>
+      <div class="likert">
+        <span class="endlab">strongly disagree</span>
+        <span class="dots">
+          <label class="dot"><input type="radio" name="changedFeeling" value="1">1</label>
+          <label class="dot"><input type="radio" name="changedFeeling" value="2">2</label>
+          <label class="dot"><input type="radio" name="changedFeeling" value="3">3</label>
+          <label class="dot"><input type="radio" name="changedFeeling" value="4">4</label>
+          <label class="dot"><input type="radio" name="changedFeeling" value="5">5</label>
+        </span>
+        <span class="endlab right">strongly agree</span>
+      </div>
+
+      <label class="q">6. How aware are you now of how Meta collects and profits from your data?</label>
+      <div class="likert">
+        <span class="endlab">not aware at all</span>
+        <span class="dots">
+          <label class="dot"><input type="radio" name="awarenessAfter" value="1">1</label>
+          <label class="dot"><input type="radio" name="awarenessAfter" value="2">2</label>
+          <label class="dot"><input type="radio" name="awarenessAfter" value="3">3</label>
+          <label class="dot"><input type="radio" name="awarenessAfter" value="4">4</label>
+          <label class="dot"><input type="radio" name="awarenessAfter" value="5">5</label>
+        </span>
+        <span class="endlab right">very aware</span>
+      </div>
+
+      <!-- ============ THE THREE VISUALIZATIONS ============ -->
+      <div class="section-title">The three visualizations</div>
+
+      <label class="q">7. How easy was each one to understand?</label>
+      <div class="matrix">
+        <span></span><span class="mh">1</span><span class="mh">2</span><span class="mh">3</span><span class="mh">4</span><span class="mh">5</span>
+        <span class="mname">The Attention Market</span>
+        <input type="radio" name="ease-attention" value="1"><input type="radio" name="ease-attention" value="2"><input type="radio" name="ease-attention" value="3"><input type="radio" name="ease-attention" value="4"><input type="radio" name="ease-attention" value="5">
+        <span class="mname">The Growth</span>
+        <input type="radio" name="ease-growth" value="1"><input type="radio" name="ease-growth" value="2"><input type="radio" name="ease-growth" value="3"><input type="radio" name="ease-growth" value="4"><input type="radio" name="ease-growth" value="5">
+        <span class="mname">The User Space</span>
+        <input type="radio" name="ease-userspace" value="1"><input type="radio" name="ease-userspace" value="2"><input type="radio" name="ease-userspace" value="3"><input type="radio" name="ease-userspace" value="4"><input type="radio" name="ease-userspace" value="5">
+      </div>
+      <div class="scale-caption">1 = hard to understand · 5 = easy to understand</div>
+
+      <label class="q">8. How strongly did each one affect you emotionally?</label>
+      <div class="matrix">
+        <span></span><span class="mh">1</span><span class="mh">2</span><span class="mh">3</span><span class="mh">4</span><span class="mh">5</span>
+        <span class="mname">The Attention Market</span>
+        <input type="radio" name="impact-attention" value="1"><input type="radio" name="impact-attention" value="2"><input type="radio" name="impact-attention" value="3"><input type="radio" name="impact-attention" value="4"><input type="radio" name="impact-attention" value="5">
+        <span class="mname">The Growth</span>
+        <input type="radio" name="impact-growth" value="1"><input type="radio" name="impact-growth" value="2"><input type="radio" name="impact-growth" value="3"><input type="radio" name="impact-growth" value="4"><input type="radio" name="impact-growth" value="5">
+        <span class="mname">The User Space</span>
+        <input type="radio" name="impact-userspace" value="1"><input type="radio" name="impact-userspace" value="2"><input type="radio" name="impact-userspace" value="3"><input type="radio" name="impact-userspace" value="4"><input type="radio" name="impact-userspace" value="5">
+      </div>
+      <div class="scale-caption">1 = didn't affect me · 5 = affected me strongly</div>
+
+      <label class="q" for="whyAffected">9. The one that affected you most — why? <span class="opt">(optional)</span></label>
+      <textarea class="field" id="whyAffected" data-key="whyAffected" maxlength="600" placeholder="A few words are enough…"></textarea>
+
+      <!-- ============ CLOSING ============ -->
+      <div class="section-title">To close</div>
+
+      <label class="q">10. Will you do anything differently after today?</label>
+      <div class="chips">
+        <label class="chip">check my ad settings <input type="checkbox" name="actions" value="check ad settings"></label>
+        <label class="chip">limit my screen time <input type="checkbox" name="actions" value="limit screen time"></label>
+        <label class="chip">download my data <input type="checkbox" name="actions" value="download my data"></label>
+        <label class="chip">delete an account <input type="checkbox" name="actions" value="delete an account"></label>
+        <label class="chip">talk about this with someone <input type="checkbox" name="actions" value="talk about it"></label>
+        <label class="chip">probably nothing <input type="checkbox" name="actions" value="probably nothing"></label>
+      </div>
+
+      <label class="q">11. Could a plain article with the same facts have had the same effect?</label>
+      <div class="pills single">
+        <label class="pill">Yes — the data alone would be just as powerful <input type="radio" name="artForm" value="yes"></label>
+        <label class="pill">No — the visualizations made it feel different <input type="radio" name="artForm" value="no"></label>
+        <label class="pill">I'm not sure <input type="radio" name="artForm" value="unsure"></label>
+      </div>
+
+      <label class="q">12. Would you be likely to participate in a community about data privacy — sharing practices, ideas, solutions?</label>
+      <div class="likert">
+        <span class="endlab">not likely</span>
+        <span class="dots">
+          <label class="dot"><input type="radio" name="community" value="1">1</label>
+          <label class="dot"><input type="radio" name="community" value="2">2</label>
+          <label class="dot"><input type="radio" name="community" value="3">3</label>
+          <label class="dot"><input type="radio" name="community" value="4">4</label>
+          <label class="dot"><input type="radio" name="community" value="5">5</label>
+        </span>
+        <span class="endlab right">very likely</span>
+      </div>
+
+      <div class="submit-zone">
+        <button class="btn-signup" id="submitBtn">Submit</button>
+        <a class="skip-bottom" href="temp-thanks.html">skip and continue →</a>
+      </div>
+      <div class="consent">By continuing, you agree to participate in this study for educational and research purposes. Your responses are anonymized.</div>
+    </form>
+  </div>
+
+  <footer class="disclaimer">
+    Independent academic project · Vrije Universiteit Amsterdam · Not affiliated with Meta Platforms, Inc.<br>
+    All answers are analyzed anonymously · educational purposes only · no personal data is collected or shared · no data will be sold.<br>
+    navigate: H home · N next · B back
+  </footer>
+</div>
+
+<script>
+function radioVal(name) {
+  const el = document.querySelector(`input[name="${name}"]:checked`);
+  return el ? el.value : null;
+}
+function checkVals(name) {
+  return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map((el) => el.value);
+}
+
+document.getElementById("submitBtn").addEventListener("click", () => {
+  const byKey = {};
+  document.querySelectorAll("[data-key]").forEach((el) => { byKey[el.dataset.key] = el.value.trim(); });
+
+  const baseline = JSON.parse(sessionStorage.getItem("md_baseline") || "null");
+
+  const response = {
+    prolificId: byKey.prolificId || null,
+    baseline: baseline,
+    submittedAt: new Date().toISOString(),
+    project: {
+      message: byKey.message || null,
+      passiveDataAwareness: radioVal("passiveData"),
+      emotions: checkVals("emotions"),
+      changedThinking: radioVal("changedThinking"),
+      changedFeeling: radioVal("changedFeeling"),
+      awarenessAfter: radioVal("awarenessAfter"),
+    },
+    visualizations: {
+      ease: {
+        "The Attention Market": radioVal("ease-attention"),
+        "The Growth": radioVal("ease-growth"),
+        "The User Space": radioVal("ease-userspace"),
+      },
+      impact: {
+        "The Attention Market": radioVal("impact-attention"),
+        "The Growth": radioVal("impact-growth"),
+        "The User Space": radioVal("impact-userspace"),
+      },
+      whyAffected: byKey.whyAffected || null,
+    },
+    closing: {
+      intendedActions: checkVals("actions"),
+      artFormEffect: radioVal("artForm"),
+      communityInterest: radioVal("community"),
+    },
+  };
+
+  /* SYNC: send survey response to backend here */
+  sessionStorage.setItem("md_survey", JSON.stringify(response));
+  console.log("[metadata] end survey:", response);
+
+  window.location.href = "temp-thanks.html";
+});
+
+const ORDER = [
+  "index.html",
+  "intro-login.html",
+  "pre-survey.html",
+  "marketintro.html",
+  "market.html",
+  "treeintro.html",
+  "tree.html",
+  "spaceintro.html",
+  "space.html",
+  "end-survey.html",
+  "temp-thanks.html",
+  "data-community.html"
+];
+document.addEventListener("keydown", (e) => {
+  if (e.target.matches("input, textarea, select") || e.metaKey || e.ctrlKey || e.altKey) return;
+  const here = location.pathname.split("/").pop() || "data-community.html";
+  const i = Math.max(0, ORDER.indexOf(here));
+  const k = e.key.toLowerCase();
+  if (k === "h") location.href = ORDER[0];
+  else if (k === "n") location.href = ORDER[(i + 1) % ORDER.length];
+  else if (k === "b") location.href = ORDER[(i - 1 + ORDER.length) % ORDER.length];
+});
+</script>
+</body>
+</html>

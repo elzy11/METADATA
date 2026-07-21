@@ -21,7 +21,53 @@
   - WEEKEND_FACTOR: authored calibration; direction per engagement
     benchmark reports (lower weekend interaction volume)
 
-  No dependencies — plain JavaScript, module window.MetaData.
+  - v5: REV_PRE2012 (lifetime revenue 2004–2011, per SEC Form S-1 Feb 2012
+    and 10-K filings: 0.4M+9M+48M+153M+272M+777M+1.974B+3.711B ≈ $6.94B),
+    revCumTotal(); methodsCurve() (passive-collection intensity: Beacon '07,
+    Like-button tracking '10–11, FBX/Datalogix '12 -> ~0.12 at window start;
+    industrialized 2013–15: Custom Audiences, data brokers, Pixel,
+    browsing-history targeting Jun 2014; mature 2018+); minuteJitter()
+    (shared ±3% per-minute variance, seeded by epoch minute); FX_EUR
+    ($1 = €0.877, 2026-07-13).
+
+  - v6: year-aware weekly engagement structure. All multipliers are
+    NORMALIZED (weekly / yearly mean = 1) so totals stay anchored to the
+    reported figures — they redistribute attention, never add or delete it.
+    · DAILY_MULT_BASE + dayFactorY(dow, yf): 7-day curve (Tue/Wed peak,
+      Sat/Sun trough), contrast fading as behavior grows more passive
+      (2012 full -> 65% by 2024) and flattened during COVID lockdowns.
+      Weekly shape: Sprout Social 2026 best-times study; Buffer 2026
+      (9.6M Instagram posts). COVID flattening: authored calibration,
+      direction per arxiv 2106.01013 (Italian IG/FB lockdown study —
+      reports increased lockdown engagement + weekly-pattern shifts;
+      the 40% coefficient itself is ours). Passive fade: authored,
+      per ENG_PCT decline 2012->2026.
+    · dayFactor(dow, yf): existing function gains an OPTIONAL year arg —
+      old one-arg calls behave exactly as before (WEEKEND_FACTOR path).
+    · seasonalQ(yf): quarterly seasonality ±3.5%, mean 1.0 per year.
+      Authored calibration informed by Meta IR quarterly patterns
+      (revenue seasonality is mostly ad pricing; engagement gets less).
+    · eventMult(yf): structural breaks — 2018 Q1–Q3 ×0.95 (January 2018
+      feed change; Meta: ~50M hours/day removed ≈ −5% time spent),
+      2020 Q2 ×1.12 (COVID surge; Meta Mar 2020: messaging +50%, calls
+      doubled in locked-down countries).
+    · eventsPerMinDay(yf, dow): daily-average events/min on a calendar
+      day (for history builds); eventsPerMinLive() now applies the same
+      v6 structure internally — same contract, better estimate.
+    · EVENTS: Cambridge Analytica attention line nuanced (time-spent
+      slip); new MAR 2020 · LOCKDOWN card (12 events total).
+
+  - v7: advertising revenue isolated. AD_REV_B: Meta's reported
+    "Advertising" line item from annual 10-K revenue disaggregation
+    (2012-2024 actual; 2025 derived: total $200.97B - Reality Labs
+    $2.21B - FoA-other est ~$2.4B; exact line in FY2025 10-K; 2026 EST).
+    AD_REV_PRE2012 ~ $6.25B: SEC Form S-1 (Feb 2012) advertising split
+    2009-2011 (0.764B + 1.868B + 3.154B) + 2007-08 ads est ~0.41B +
+    2004-06 ~0.06B (earliest split EST). adRevCum()/adRevCumTotal()
+    mirror revCum()/revCumTotal(); adShare() = ads / total revenue.
+
+
+  No dependencies — plain JavaScript, defines window.MetaData.
 */
 
 (function () {
@@ -192,8 +238,9 @@
   // dated market/attention events (annotation cards)
   const EVENTS = [
     {"d": "2012-05-18", "title": "18 MAY 2012 · IPO — WALL STREET MEETS FACEBOOK", "mDir": -1, "mText": "priced at $38, down 53% within four months", "aDir": 1, "aText": "crossed one billion monthly users that same autumn", "quote": "It lost half its value in four months, but gained its first billion users.", "url": "https://money.cnn.com/2012/05/23/technology/facebook-ipo-what-went-wrong/index.htm", "domain": "money.cnn.com"},
-    {"d": "2018-03-19", "title": "MAR 2018 · CAMBRIDGE ANALYTICA", "mDir": -1, "mText": "−18% over two weeks · #DeleteFacebook trends worldwide", "aDir": 1, "aText": "daily users +13% year-on-year through the scandal", "quote": "Outrage as it turns out, is also engagement.", "url": "https://www.cnbc.com/2018/03/19/facebook-shares-fall-over-fallout-from-cambridge-analytica-scandal.html", "domain": "cnbc.com"},
+    {"d": "2018-03-19", "title": "MAR 2018 · CAMBRIDGE ANALYTICA", "mDir": -1, "mText": "−18% over two weeks · #DeleteFacebook trends worldwide", "aDir": 1, "aText": "daily users +13% year-on-year — though time spent slipped after the feed change", "quote": "Outrage as it turns out, is also engagement.", "url": "https://www.cnbc.com/2018/03/19/facebook-shares-fall-over-fallout-from-cambridge-analytica-scandal.html", "domain": "cnbc.com"},
     {"d": "2018-07-26", "title": "26 JUL 2018 · GROWTH SLOWS · THE GDPR QUARTER", "mDir": -1, "mText": "−19% in one day · −$119B, the largest single-day loss in history at the time", "aDir": 0, "aText": "1.47 billion people still came back every single day", "quote": "As Wall Street called it the worst day in market history, it grew by fifty million people in that quarter.", "url": "https://money.cnn.com/2018/07/26/technology/business/facebook-stock-drop/index.html", "domain": "money.cnn.com"},
+    {"d": "2020-03-18", "title": "MAR 2020 · LOCKDOWN", "mDir": -1, "mText": "−34% in five weeks, as the pandemic crashes the ad market", "aDir": 1, "aText": "messaging +50%, video calls doubled — usage at record highs in locked-down countries", "quote": "The world stood still, yet the feed never moved faster.", "url": "https://about.fb.com/news/2020/03/keeping-our-apps-stable-during-covid-19/", "domain": "about.fb.com"},
     {"d": "2021-09-14", "title": "SEP 2021 · THE WHISTLEBLOWER FILES", "mDir": -1, "mText": "−13% over the following month", "aDir": 0, "aText": "usage unmoved by the company's own leaked research", "quote": "The research was leaked, read, cited in Congress, and shared on your feed.", "url": "https://time.com/6104351/facebook-stock-whistleblower/", "domain": "time.com"},
     {"d": "2022-02-03", "title": "03 FEB 2022 · APPLE TRACKING CHANGE & FIRST-EVER USER DECLINE", "mDir": -1, "mText": "−26.4% in one day · −$232B, the largest single-day loss in market history", "aDir": -1, "aText": "−0.05% · a million fewer, out of 1.93 billion — a rounding error", "quote": "The market panicked, yet nobody stopped scrolling.", "url": "https://www.cnbc.com/2022/02/03/facebooks-232billion-drop-in-value-sets-all-time-record.html", "domain": "cnbc.com"},
     {"d": "2022-11-04", "title": "NOV 2022 · METAVERSE LOSSES · 11,000 LAYOFFS", "mDir": -1, "mText": "$88 — lowest price since 2015, −76% from peak", "aDir": 1, "aText": "daily users hit an all-time high of 2.0B that same quarter", "quote": "The company lost three quarters of its value, yet it never lost you.", "url": "https://www.npr.org/2022/10/27/1131705422/facebook-meta-earnings-stock-price-fall-metaverse", "domain": "npr.org"},
@@ -248,13 +295,108 @@
   // Use for moments with a REAL calendar date; keep rhythm() for abstract
   // "typical day" loops that have no weekday.
   const WEEK_NORM = (5 + 2 * WEEKEND_FACTOR) / 7;
-  function dayFactor(dow) {
+  // v6: optional second arg — dayFactor(dow, yf) uses the year-aware
+  // weekly curve (dayFactorY); dayFactor(dow) behaves exactly as before.
+  function dayFactor(dow, yf) {
+    if (yf !== undefined) return dayFactorY(dow, yf);
     return ((dow === 0 || dow === 6) ? WEEKEND_FACTOR : 1) / WEEK_NORM;
   }
   function rhythmWeek(h, dow) { return rhythm(h) * dayFactor(dow); }
 
+  // ---- v5 additions (ADDITIVE ONLY — see header for sources) ----
+
+  // lifetime revenue before the 2012 window (SEC Form S-1, Feb 2012; 10-Ks)
+  const REV_PRE2012 = 6.94e9;
+
+  // passive-extraction methods intensity, 0..1 (historical anchors in header)
+  function methodsCurve(yf) {
+    const b = clamp((yf - 2012.3) / 3.2, 0, 1);
+    const s = b * b * (3 - 2 * b);
+    return Math.min(1, 0.12 + 0.78 * s + 0.10 * clamp((yf - 2018) / 4, 0, 1));
+  }
+
+  // shared per-minute session variance, ±3%, seeded by epoch minute —
+  // every visualization shows the SAME value in the same minute
+  function minuteJitter(epochMin) {
+    let a = (epochMin | 0) % 2147483647;
+    a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = t + Math.imul(t ^ (t >>> 7), 61 | t) ^ t;
+    const r = ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    return (r * 2 - 1) * 0.03;
+  }
+
+  // fixed display FX (update rate + date together when refreshed)
+  const FX_EUR = { rate: 0.877, date: '2026-07-13' };
+
+  // ---- v6 additions (ADDITIVE ONLY — see header for sources) ----
+
+  // 7-day weekly engagement curve, Sun..Sat (Tue/Wed peak, weekend trough).
+  // Shape: Sprout Social 2026 / Buffer 2026. RAW values — normalized below.
+  const DAILY_MULT_BASE = [0.72, 0.88, 1.00, 1.00, 0.96, 0.82, 0.68];
+
+  // weekday/weekend contrast blend at fractional year yf, 0..1
+  // (1 = full curve, lower = flatter week):
+  //  · passive fade: 2012 full -> 65% by 2024+ (behavioral uniformity)
+  //  · COVID: 2020–21 flattened to 60%, 2022 partial recovery 80%
+  function weekBlend(yf) {
+    const passive = clamp(1.0 - (yf - 2012) * (0.35 / 12), 0.65, 1.0);
+    let covid = 1.0;
+    if (yf >= 2020 && yf < 2022) covid = 0.60;
+    else if (yf >= 2022 && yf < 2023) covid = 0.80;
+    return Math.min(passive, covid);
+  }
+
+  // year-aware day-of-week factor, NORMALIZED so the weekly mean is
+  // exactly 1 for every year — redistributes attention, never deletes it
+  function dayFactorY(dow, yf) {
+    const b = weekBlend(yf);
+    let mean = 0;
+    for (let i = 0; i < 7; i++) mean += (1 + (DAILY_MULT_BASE[i] - 1) * b) / 7;
+    return (1 + (DAILY_MULT_BASE[dow] - 1) * b) / mean;
+  }
+
+  // quarterly seasonality, mean 1.0 per year (Q4 high, Q1 low) —
+  // authored calibration, ±3.5% (see header)
+  const SEASONAL_Q = [0.965, 0.985, 1.010, 1.040];
+  function seasonalQ(yf) {
+    const q = clamp(Math.floor(((yf % 1) + 1) % 1 * 4), 0, 3);
+    return SEASONAL_Q[q];
+  }
+
+  // structural engagement breaks (real deviations — deliberately NOT
+  // mean-conserving): 2018 feed-change dip, COVID Q2 2020 surge
+  function eventMult(yf) {
+    if (yf >= 2018.0 && yf < 2018.75) return 0.95;
+    if (yf >= 2020.25 && yf < 2020.5) return 1.12;
+    return 1.0;
+  }
+
+  // daily-average engagement events per MINUTE on a calendar day —
+  // eventsPerSec × 60 with the v6 weekly/seasonal/event structure.
+  // Use for building daily history; omit dow for a flat "typical day".
+  function eventsPerMinDayFn(yf, dow) {
+    const df = (dow === undefined) ? 1 : dayFactorY(dow, yf);
+    return series(DAU_B, yf) * 1e9 * series(INT_DAY, yf) / 86400 * 60
+      * df * seasonalQ(yf) * eventMult(yf);
+  }
+
+  // ---- v7 additions (ADDITIVE ONLY — see header for sources) ----
+
+  // Meta reported ADVERTISING revenue, billions USD/yr (10-K line item;
+  // 2025 derived from FY2025 results, 2026 EST)
+  const AD_REV_B = [4.28, 6.99, 11.49, 17.08, 26.89, 39.94, 55.01, 69.66, 84.17, 114.93, 113.64, 131.95, 160.63, 196.4, 239.0];
+  const AD_REV_YR = AD_REV_B.map(v => v * 1e9);
+  const AD_REV_CUM = [0];
+  for (let i = 1; i < AD_REV_YR.length; i++) {
+    AD_REV_CUM[i] = AD_REV_CUM[i - 1] + (AD_REV_YR[i - 1] + AD_REV_YR[i]) / 2;
+  }
+
+  // lifetime ADVERTISING revenue before 2012 (Form S-1 split, see header)
+  const AD_REV_PRE2012 = 6.25e9;
+
   window.MetaData = {
-    version: 4,
+    version: 7,
     YEAR0: YEAR0,
     estFrom: 2026,
 
@@ -315,11 +457,32 @@
     // yf = fractional year, h = local hour 0–24, dow = 0(Sun)…6(Sat);
     // omit dow for an abstract "typical day" (no weekend damping).
     // Body uses closure functions (module style) — safe to destructure.
+    // v6: internals upgraded — year-aware weekly curve + seasonal +
+    // structural breaks (contract unchanged; totals still conserved,
+    // except the deliberate 2018/2020 breaks which reflect reality)
     eventsPerMinLive(yf, h, dow) {
-      const df = (dow === undefined) ? 1 : dayFactor(dow);
+      const df = (dow === undefined) ? 1 : dayFactorY(dow, yf);
       const conc = series(DAU_B, yf) * 1e9 * (series(MIN_DAY, yf) / 1440) * rhythm(h);
       const perActiveSec = series(INT_DAY, yf) / (series(MIN_DAY, yf) * 60);
-      return conc * df * perActiveSec * 60;
+      return conc * df * perActiveSec * 60 * seasonalQ(yf) * eventMult(yf);
     },
+
+    // ---- v5 additions (ADDITIVE ONLY) ----
+    REV_PRE2012, methodsCurve, minuteJitter, FX_EUR,
+
+    // lifetime cumulative revenue: pre-window anchor + since-2012 integral
+    revCumTotal(yf) { return REV_PRE2012 + series(REV_CUM, yf); },
+
+    // ---- v6 additions (ADDITIVE ONLY) ----
+    DAILY_MULT_BASE, dayFactorY, weekBlend, seasonalQ, eventMult,
+    eventsPerMinDay: eventsPerMinDayFn,
+
+    // ---- v7 additions (ADDITIVE ONLY) ----
+    AD_REV_B, AD_REV_YR, AD_REV_CUM, AD_REV_PRE2012,
+    adRevYr(yf) { return series(AD_REV_YR, yf); },
+    adRevPerSec(yf) { return series(AD_REV_YR, yf) / 31557600; },
+    adRevCum(yf) { return series(AD_REV_CUM, yf); },
+    adRevCumTotal(yf) { return AD_REV_PRE2012 + series(AD_REV_CUM, yf); },
+    adShare(yf) { return series(AD_REV_YR, yf) / series(REV_YR, yf); },
   };
 })();

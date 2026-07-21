@@ -4,38 +4,45 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>THE EXTRACTION TREE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
-  html,body{margin:0;padding:0;overflow:hidden;background:#060d15;font-family:'SF Mono','Cascadia Code',Menlo,Consolas,monospace;}
+  html,body{margin:0;padding:0;overflow:hidden;background:#060d15;
+            font-family:'IBM Plex Mono','SF Mono',Menlo,Consolas,monospace;}
   canvas{display:block;}
   .tg{position:absolute;top:4px;right:5px;background:none;border:none;color:#5aa8c4;
-      font-family:inherit;font-size:11px;cursor:pointer;padding:1px 4px;line-height:1;}
+      font-family:inherit;font-size:13px;cursor:pointer;padding:1px 5px;line-height:1;}
   .tg:hover{color:#c9f7ff;}
-  .closed{padding:5px 22px 5px 9px !important;min-width:0 !important;width:auto !important;max-width:none !important;}
+  .closed{padding:5px 24px 5px 9px !important;min-width:0 !important;width:auto !important;max-width:none !important;}
   .closed>*:not(.tg):not(.chip){display:none !important;}
-  .chip{display:none;color:#6fb9d4;font-size:9px;letter-spacing:1.5px;}
+  .chip{display:none;color:#6fb9d4;font-size:10.5px;letter-spacing:1.5px;cursor:pointer;}
   .closed .chip{display:inline;}
-  #hud{position:fixed;top:14px;left:14px;color:#4a7d96;font-size:8.5px;line-height:1.5;
-       background:rgba(5,14,22,.66);border:1px solid rgba(90,215,255,.25);padding:9px 20px 9px 12px;
-       backdrop-filter:blur(6px);letter-spacing:.4px;width:158px;
+  #hud{position:fixed;top:14px;left:14px;color:#4a7d96;font-size:10px;line-height:1.5;
+       background:rgba(5,14,22,.66);border:1px solid rgba(90,215,255,.25);padding:10px 14px;
+       backdrop-filter:blur(6px);letter-spacing:.4px;width:190px;
        box-shadow:0 0 26px rgba(70,200,255,.07) inset;}
-  #hud>div{margin-bottom:5px;}
-  #hud .v{color:#eafcff;font-weight:600;display:block;float:none;margin:0;font-size:11.5px;
+  #hud>div{margin-bottom:6px;}
+  #hud .v{color:#eafcff;font-weight:600;display:block;float:none;margin:0;font-size:13.5px;
           text-shadow:0 0 8px rgba(120,230,255,.55);}
-  #hud .est{color:#6aa7c9;font-size:8px;vertical-align:top;}
-  #hud .up{color:#7dffb0;} #hud .dn{color:#ff6b6b;}
-  #hud .dim{color:#4a7d96;font-size:9px;}
-  #hud .mult{color:#7dffb0;font-size:8px;font-weight:400;opacity:.85;}
-  #cur{margin-bottom:5px;}
+  #hud .est{color:#6aa7c9;font-size:9px;vertical-align:top;}
+  #hud .up{color:#7dffb0;font-size:9px;} #hud .dn{color:#ff6b6b;font-size:9px;}
+  #hud .dim{color:#4a7d96;font-size:10.5px;}
+  #hud .mult{color:#7dffb0;font-size:9px;font-weight:400;opacity:.85;}
+  #cur{margin-bottom:6px;}
   #cur button{background:none;border:1px solid rgba(90,215,255,.35);color:#9fdcef;font-family:inherit;
-              font-size:8.5px;padding:0 5px;cursor:pointer;}
+              font-size:10px;padding:1px 7px;cursor:pointer;}
   #cur button.on{background:#0a3040;border-color:#5ae9ff;color:#c9f7ff;}
-  #title{position:fixed;top:14px;right:18px;text-align:right;color:#c9f2ff;}
-  #title h1{margin:0;font-size:14px;font-weight:600;letter-spacing:4px;text-shadow:0 0 12px rgba(120,230,255,.6);}
-  #title p{margin:4px 0 0;font-size:9px;color:#4a7d96;letter-spacing:1px;line-height:1.6;}
-  #stamp{position:fixed;top:74px;right:18px;text-align:right;color:#4a7d96;font-size:9px;letter-spacing:1px;line-height:1.7;}
+  #title{position:fixed;top:14px;left:252px;text-align:left;color:#c9f2ff;}
+  #title h1{margin:0;font-size:17px;font-weight:600;letter-spacing:4px;text-shadow:0 0 12px rgba(120,230,255,.6);}
+  #title p{margin:4px 0 0;font-size:10.5px;color:#4a7d96;letter-spacing:1px;line-height:1.6;}
+  #stamp{position:fixed;top:72px;left:252px;text-align:left;color:#4a7d96;font-size:9px;letter-spacing:1px;line-height:1.7;}
   #stamp .live{color:#5ae9ff;text-shadow:0 0 8px rgba(90,233,255,.7);} #stamp .hist{color:#c9a86a;}
-  #explain{position:fixed;right:18px;bottom:18px;width:272px;color:#7fb6cd;font-size:9.5px;line-height:1.65;
-           background:rgba(5,14,22,.72);border:1px solid rgba(90,215,255,.22);padding:10px 20px 10px 13px;
+  #nav{position:fixed;top:14px;right:18px;text-align:right;font-size:9.5px;line-height:1.9;letter-spacing:1px;}
+  #nav a{display:block;color:#4a7d96;text-decoration:none;}
+  #nav a:hover{color:#c9f7ff;text-shadow:0 0 8px rgba(90,233,255,.5);}
+  #explain{position:fixed;right:18px;bottom:18px;width:316px;color:#7fb6cd;font-size:11px;line-height:1.65;
+           background:rgba(5,14,22,.72);border:1px solid rgba(90,215,255,.22);padding:11px 22px 11px 14px;
            backdrop-filter:blur(6px);letter-spacing:.3px;}
   #explain b{color:#c9f2ff;letter-spacing:1px;}
   #timebar{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;
@@ -45,33 +52,30 @@
                   font-size:10px;padding:3px 9px;cursor:pointer;letter-spacing:1px;}
   #timebar button:hover{background:rgba(90,215,255,.13);}
   #timebar button.on{background:#0a3040;border-color:#5ae9ff;color:#c9f7ff;box-shadow:0 0 10px rgba(90,233,255,.35);}
-  #yr{font-size:13px;font-weight:600;min-width:58px;text-align:center;letter-spacing:2px;}
+  #yr{font-size:11.5px;font-weight:600;min-width:80px;text-align:center;letter-spacing:2px;}
   input[type=range]{width:min(300px,30vw);accent-color:#5ae9ff;}
-  #legend{position:fixed;left:14px;bottom:18px;color:#7fb6cd;font-size:9.5px;line-height:1.9;letter-spacing:.4px;
-          background:rgba(5,14,22,.72);border:1px solid rgba(90,215,255,.22);padding:10px 20px 10px 13px;
-          backdrop-filter:blur(6px);max-width:340px;}
-  #legend .g{display:inline-block;width:20px;text-align:center;}
+  #legend{position:fixed;left:14px;bottom:26px;color:#7fb6cd;font-size:11px;line-height:1.9;letter-spacing:.4px;
+          background:rgba(5,14,22,.72);border:1px solid rgba(90,215,255,.22);padding:11px 22px 11px 14px;
+          backdrop-filter:blur(6px);max-width:420px;}
+  #legend .g{display:inline-block;width:22px;text-align:center;}
   #legend .n{color:#96f2ff;}
   #legend .lf{color:#b4ffef;} #legend .rw{color:#52ccee;} #legend .cu{color:#e1fcff;text-shadow:0 0 6px rgba(140,235,255,.8);}
-  #legend .fine{color:#41708a;font-size:8.5px;line-height:1.6;margin-top:6px;display:block;}
+  #foot{position:fixed;left:14px;bottom:4px;color:#35617a;font-size:7.5px;letter-spacing:.4px;white-space:nowrap;}
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
 
 <div id="hud">
-  <button class="tg">–</button><span class="chip">DATA</span>
-  <div id="cur"><button id="bUsd" class="on">$</button> <button id="bEur">€</button></div>
-  <div>ACTIVE SESSIONS <span class="v" id="hSess">—</span></div>
+  <div id="cur"><button id="bUsd">$</button> <button id="bEur" class="on">€</button></div>
+  <div>ACTIVE SESSIONS /min<span class="v" id="hSess">—</span></div>
   <div>NODES <span class="v" id="hNodes">—</span></div>
+  <div>CUM AD REVENUE <span class="v" id="hRev">—</span></div>
   <div>ROOT WIRES <span class="v" id="hRoots">—</span></div>
-  <div>REVENUE / MIN <span class="v" id="hRev">—</span></div>
-  <div>ENGAGEMENT EVENTS / MIN <span class="v" id="hEv">—</span></div>
+  <div>ENGAGEMENT EVENTS /min <span class="v" id="hEv">—</span></div>
   <div>ENGAGEMENT RATE <span class="v" id="hEng">—</span></div>
   <div>PASSIVITY INDEX <span class="v" id="hPas">—</span></div>
   <div>EXTRACTED WHILE WATCHING <span class="v" id="hExt">—</span></div>
-  <div class="dim" style="margin-top:6px" id="hGrow">—</div>
-  <div class="dim" id="hScale">—</div>
 </div>
 
 <div id="title">
@@ -81,22 +85,35 @@
 
 <div id="stamp"></div>
 
-<div id="explain">
-  <button class="tg">–</button><span class="chip">HOW TO READ THIS</span>
+<div id="nav">
+  <a href="spaceintro.html">next: [N]</a>
+  <a href="treeintro.html">back: [B]</a>
+  <a href="index.html">home: [H]</a>
+</div>
+
+<div id="explain" class="closed">
+  <button class="tg">+</button><span class="chip">HOW TO READ THIS</span>
   <div>
   <b>HOW TO READ THIS</b><br>
-  Above ground: people on Facebook &amp; Instagram right now. One node = 250,000
-  users online; the count follows the daily and weekly rhythm and updates each
-  minute (±3% minute-to-minute variance is simulated). Leaves are engagement
-  events — likes, comments, shares, posts — appearing at the per-user rate of
-  the year shown; that rate has fallen about 8× since 2012.<br>
-  Below ground: the root fabric represents all revenue Meta has ever earned —
-  about $6.9B entering 2012, over $1.1 trillion today. It only ever grows; in
-  LIVE mode it keeps growing at the real revenue rate.<br>
-  The moving light is passive data collection, which operates independently of
-  engagement; it has run since the late 2000s and its volume here scales with
-  revenue. Drag the timeline to any point between 2012 and today. $/€ converts
-  at 0.877 (July 2026).
+
+  Above ground: what we see <br>
+  people on Facebook &amp; Instagram right now. One node = 250,000 users online; 
+  the count follows the daily and weekly rhythm and updates each minute . Leaves 
+  are engagement events — likes, comments, shares, posts — appearing at the per-user 
+  rate with real weekly and seasonal swings.<br>
+
+  Below ground: what we do not see<br>
+  the roots represent all advertising revenue Meta has ever earned — the value extracted 
+  from attention and data today<br>
+
+  in LIVE mode it keeps growing at the real ad-revenue rate.<br>
+
+  The moving light is passive data collection, 
+  which operates independently of engagement; it has run since 
+  the late 2000s and its volume here scales with ad revenue. <br>
+
+  [←][→] Use the arrow keys to change the timeline <br>
+
   </div>
 </div>
 
@@ -113,17 +130,17 @@
   <div>
   <span class="g n">◎</span> node — 250,000 users online now<br>
   <span class="g lf">◇</span> leaf — one engagement event (<span id="lgLeaf">≈—</span> real events)<br>
-  <span class="g lf">⇣</span> falling leaf — engagement absorbed as data<br>
-  <span class="g rw">═</span> root fabric — all revenue ever extracted (<span id="lgRatio">—</span>)<br>
-  <span class="g cu">✦</span> moving light — passive data extraction, volume ∝ √revenue<br>
-  <span class="fine">sources: Meta Investor Relations / SEC filings · Rival IQ / Socialinsider benchmarks ·
-  pre-2012 revenue per SEC Form S-1 · 2026 values estimated</span>
+  <span class="g lf">⇣</span> falling leaf — engagement absorbed as data · leaf volume ∝ per-user engagement rate<br>
+  <span class="g rw">═</span> root fabric — all ad revenue ever extracted (<span id="lgRatio">—</span>)<br>
+  <span class="g cu">✦</span> moving light — passive data extraction, volume ∝ √ad revenue
   </div>
 </div>
 
-<script src="shared/meta_series.js"></script>
+<div id="foot">sources: Meta Investor Relations / SEC filings (10-K advertising revenue) · Rival IQ / Socialinsider benchmarks · pre-2012 ad revenue per SEC Form S-1 · 2026 values estimated</div>
+
 <script src="shared/p5.min.js"></script>
 <script src="shared/nav.js"></script>
+<script src="shared/meta_series.js"></script>
 <script src="tree.js"></script>
 </body>
 </html>

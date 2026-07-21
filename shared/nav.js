@@ -4,14 +4,19 @@
    ============================================================ */
 (function () {
   const ORDER = [
-    "index.html",
-    "market.html",
-    "space.html",
-    "tree.html",
-    "metadata-login.html",
-    "metadata-survey.html",
-    "data-community.html",
-  ];
+  "index.html",
+  "intro-login.html",
+  "pre-survey.html",
+  "marketintro.html",
+  "market.html",
+  "treeintro.html",
+  "tree.html",
+  "spaceintro.html",
+  "space.html",
+  "end-survey.html",
+  "temp-thanks.html",
+  "data-community.html"
+];
   document.addEventListener("keydown", (e) => {
     if (e.target.matches("input, textarea, select") || e.metaKey || e.ctrlKey || e.altKey) return;
     const here = location.pathname.split("/").pop() || "index.html";

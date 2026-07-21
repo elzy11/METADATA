@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>thank you — metadata metaphors</title>
+<style>
+  :root{
+    --accent:#2D88FF;
+    --accent-soft:#5aa3ff;
+    --green:#42B72A;
+    --green-hover:#36A420;
+    --bg:#18191A;
+    --card:#242526;
+    --text:#E4E6EB;
+    --secondary:#B0B3B8;
+    --divider:#3E4042;
+    --input-bg:#3A3B3C;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    min-height:100vh;
+    background:var(--bg);color:var(--text);
+    font-family:"Segoe UI Historic","Segoe UI",Helvetica,Arial,sans-serif;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:34px 18px 46px;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .wordmark{
+    color:var(--accent);font-size:34px;font-weight:700;letter-spacing:-1.5px;
+    font-family:Helvetica,Arial,sans-serif;text-align:center;
+    margin-bottom:8px;user-select:none;
+  }
+  .big-title{
+    font-size:clamp(28px,4.4vw,48px);font-weight:700;
+    color:var(--text);margin-bottom:28px;text-align:center;
+    letter-spacing:-1px;
+  }
+  .big-title .h{color:var(--accent);}
+
+  .card{
+    width:100%;max-width:540px;
+    background:var(--card);border-radius:8px;
+    box-shadow:0 2px 12px rgba(0,0,0,.5);
+    padding:32px 32px 36px;
+    text-align:center;
+  }
+
+  .card p{
+    font-size:16px;line-height:1.75;color:var(--text);
+    margin-bottom:14px;
+  }
+  .card p.dim{
+    font-size:14px;color:var(--secondary);
+    margin-bottom:0;line-height:1.7;
+  }
+  .divider{
+    height:1px;background:var(--divider);
+    margin:24px 0;
+  }
+  .guide{
+    font-size:12px;color:var(--secondary);
+    line-height:1.65;margin-bottom:0;
+  }
+  .guide strong{color:var(--text);}
+
+  .actions{
+    display:flex;justify-content:center;gap:12px;
+    margin-top:28px;flex-wrap:wrap;
+  }
+  .btn{
+    font-family:inherit;font-size:15px;font-weight:600;
+    background:var(--input-bg);color:var(--text);
+    border:1px solid var(--divider);border-radius:6px;
+    padding:11px 26px;cursor:pointer;text-decoration:none;
+    display:inline-block;transition:border-color .15s,background .15s;
+  }
+  .btn:hover{border-color:var(--accent);background:var(--card);}
+  .btn.solid{
+    background:var(--green);color:#fff;
+    border-color:var(--green);font-weight:700;font-size:17px;
+    padding:13px 36px;
+  }
+  .btn.solid:hover{background:var(--green-hover);border-color:var(--green-hover);}
+
+  .keyhint{
+    margin-top:24px;color:var(--secondary);
+    font-size:11px;letter-spacing:1px;text-align:center;
+  }
+  .keyhint kbd{
+    display:inline-block;background:var(--input-bg);
+    border:1px solid var(--divider);border-radius:3px;
+    padding:1px 5px;font-family:inherit;font-size:11px;color:var(--text);
+  }
+</style>
+</head>
+<body>
+
+<div class="wordmark">metadata</div>
+<h1 class="big-title">thank <span class="h">you</span></h1>
+
+<div class="card">
+  <p>
+    You have moved through the evidence, the mechanism, and the condition.
+    most people scroll past. but maybe you know more now.
+  </p>
+  <p class="dim">
+    Your reflections are the research. If you filled out the survey, you have already contributed more than you know. everything is annonymous.
+  </p>
+
+  <div class="divider"></div>
+
+  <p class="guide">
+    the community is the last piece — for you. a safe space to connect, share, explore, 
+    and do so much more than meta can.
+    <strong>we are the change</strong>
+  </p>
+
+  <div class="actions">
+    <a class="btn" href="index.html">← home</a>
+    <a class="btn solid" href="data-community.html">data community →</a>
+  </div>
+</div>
+
+<div class="keyhint">
+  <kbd>H</kbd> home &nbsp; <kbd>N</kbd> next &nbsp; <kbd>B</kbd> back
+</div>
+
+<script src="shared/nav.js"></script>
+</body>
+</html>

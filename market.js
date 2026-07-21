@@ -1,5 +1,8 @@
 // ============================================================
-// THE ATTENTION MARKET — 
+// THE ATTENTION MARKET — social engagement as a stock market,
+// side by side with META's real stock market.
+//
+// Run with:  python3 -m http.server 8000  ->  http://localhost:8000/market.html
 //
 // Stock data:
 //   · Long-range history = REAL closing prices (MetaData.STOCK_D in
@@ -11,7 +14,7 @@
 // ============================================================
 
 // ------------------------- CONFIG ---------------------------
-const FINNHUB_KEY   = 'd9958dhr01qssj11d7tgd9958dhr01qssj11d7u0';          // Finnhub API key here
+const FINNHUB_KEY   = 'd9958dhr01qssj11d7tgd9958dhr01qssj11d7u0';          // <--- paste your Finnhub API key here
 const QUOTE_POLL_MS = 15000;       // real-quote poll interval (15s)
 const TICK_MS       = 1000;        // chart tick interval (1s, like real terminals)
 // -------------------------------------------------------------
@@ -28,10 +31,39 @@ const EVENTS=window.MetaData.EVENTS; // canonical copies live in meta_series.js
 const EVENT_ROTATE_MS=25000;
 let eventIdx=0,eventHover=-1,lastRotate=0,evScreen=[],linkRect=null;
 
-// ---- display toggles (sidebar top-right buttons) ----
-let showEUR=false,showCandles=true,toggleRects=[];
-// USD->EUR via ECB reference rate (Frankfurter API); fallback if offline
-let fx={rate:0.86,live:false};
+// ---- display toggles (buttons left of the sidebar) ----
+let showEUR=true,showCandles=true,toggleRects=[]; // euros first; $ on toggle
+
+// ---- NAV corner (top-right of the charts) ----
+// EDIT: sample text — paste your real labels + targets here.
+// href '#' = placeholder (click does nothing until you set a page).
+const NAV_LINKS=[
+  {label:'next: [N]',href:'treeintro.html'},   // EDIT e.g. {label:'next: the galaxy [N]',href:'space.html'}
+  {label:'back: [B]',href:'marketintro.html'},   // EDIT e.g. {label:'back: intro [B]',href:'market-intro.html'}
+  {label:'home: [H]',href:'index.html'},   // EDIT e.g. {label:'home [H]',href:'index.html'}
+];
+let navRects=[];
+
+// ---- HOW TO READ card (sidebar, above the event card) ----
+// EDIT: example text — rewrite freely. Keep lines shortish; they wrap.
+let howOpen=false,howBtnRect=null;
+const HOW={
+  btn:'?  how to read',
+  title:'HOW TO READ',
+  desc:'Two markets, one company. The top chart is attention: engagements per minute across the EU, drawn like a stock. The bottom chart is the money: META’s real share price on NASDAQ, 2012 → live.',
+  metaphor:'engagement as stock — every like, comment and share is a trade, and your attention is the asset being priced.',
+  lines:[
+    '· candles — engagements / min, EU · green up, red down. (button above turns them off)',
+    '· line below — META share price, real closes + live tick',
+    '· ◆ — a real event; hover it and the card tells the story',
+    '· 1D–MAX — zoom · €/$ — currency · ╵╿/∿ — candles or line',
+    '· hover any chart for exact values · EST = estimated',
+  ],
+};
+
+// USD->EUR via ECB reference rate (Frankfurter API); offline fallback is
+// the module's shared fixed rate so all three visualizations convert alike
+let fx={rate:(window.MetaData.FX_EUR&&window.MetaData.FX_EUR.rate)||0.86,live:false};
 function fetchFX(){
   fetch('https://api.frankfurter.app/latest?from=USD&to=EUR')
     .then(r=>r.json())
@@ -44,7 +76,7 @@ function fxc(){return showEUR?'EUR':'USD';}       // currency code
 
 const ZOOMS=[
   {label:'1D',days:1},
-  {label:'5D',days:5},
+  {label:'1W',days:7},
   {label:'1M',days:30},
   {label:'6M',days:180},
   {label:'YTD',days:-1},
@@ -93,9 +125,10 @@ function recalcLayout(){
 
 function setup(){
   createCanvas(windowWidth,windowHeight);
-  textFont('monospace');
+  textFont('monospace'); // hardcoded system mono — sizing is tuned for it
   recalcLayout();
   REAL=MD.STOCK_D.map(r=>({ts:new Date(r[0]+'T16:00:00'),price:r[1]}));
+  buildMonthly();
   simPrice=MD.STOCK_PREV_CLOSE.price*(1+(noise(999)-0.5)*0.01); // tiny overnight gap
   buildEngHistory([]);
   initStockSession();
@@ -126,51 +159,113 @@ function fetchQuote(){
     .catch(e=>{quote.err=String(e.message||e);if(!quote.ok)quote.source='sim';});
 }
 
-// ==================== LIVE STOCK — CONTINUOUS ROLLING 24H ====================
-// One continuous line (like investing.com): always ticking, never "closed".
-// Volatility quietly follows the rhythm of the trading day, but nothing is labeled.
-function sessionVol(t){
-  let ny=new Date(t+nyOffsetMs());
-  let d=ny.getDay(),h=ny.getHours()+ny.getMinutes()/60;
-  if(d===0||d===6)return 0.22;
-  if(h>=9.5&&h<16)return 1.0;   // core hours: full volatility
-  if(h>=4&&h<9.5)return 0.45;   // pre
-  if(h>=16&&h<20)return 0.5;    // after
-  return 0.25;                  // overnight
-}
+// ==================== LIVE STOCK — CALENDAR-TRUE ====================
+// The stock line is honest about the clock: it moves ONLY while NASDAQ's
+// regular session is open (Mon–Fri 09:30–16:00 ET; US holidays not
+// modeled) and lies flat at the last close otherwise. The engagement
+// chart above it never stops — that contrast is the point.
 let _nyOff=null;
 function nyOffsetMs(){if(_nyOff===null)_nyOff=nyNow().getTime()-Date.now();return _nyOff;}
+function marketOpen(t){
+  let ny=new Date(t+nyOffsetMs());
+  let d=ny.getDay(),h=ny.getHours()+ny.getMinutes()/60;
+  return d>=1&&d<=5&&h>=9.5&&h<16;
+}
+function etDateStr(t){
+  let ny=new Date(t+nyOffsetMs());
+  return ny.getFullYear()+'-'+nf(ny.getMonth()+1,2)+'-'+nf(ny.getDate(),2);
+}
+// deterministic per-day pseudo-random (stable across rebuilds)
+function dayHash(n){let x=Math.sin(n*127.1)*43758.5453;return x-Math.floor(x);}
+
+// ---- daily close anchors ----
+// Real closes from MetaData.STOCK_D; weekdays after the data's end get a
+// deterministic simulated close (same status as the live sim — the footer
+// already says Live: Finnhub / simulated).
+let ANCH={};
+function buildAnchors(){
+  ANCH={};
+  MD.STOCK_D.forEach(r=>{ANCH[r[0]]=r[1];});
+  let last=MD.STOCK_PREV_CLOSE.price;
+  let t=new Date(MD.STOCK_PREV_CLOSE.date+'T12:00:00').getTime();
+  let now=Date.now();
+  for(t+=86400000;t<=now;t+=86400000){
+    let dow=new Date(t+nyOffsetMs()).getDay();
+    if(dow===0||dow===6)continue;
+    let ds=etDateStr(t);
+    // skip today's still-running session — it belongs to the live path
+    if(ds===etDateStr(now)&&marketOpen(now))continue;
+    if(ANCH[ds]===undefined)ANCH[ds]=last=last*(1+(dayHash(floor(t/86400000))-0.5)*0.03);
+    else last=ANCH[ds];
+  }
+}
+// close of the last session COMPLETED by time t (no future leakage:
+// a day's own close only counts once its 16:00 ET has passed)
+function closeBefore(t){
+  let off=nyOffsetMs();
+  for(let k=0;k<14;k++){
+    let tt=t-k*86400000,ds=etDateStr(tt);
+    if(ANCH[ds]===undefined)continue;
+    if(k===0){
+      let ny=new Date(tt+off),h=ny.getHours()+ny.getMinutes()/60;
+      if(h<16)continue;
+    }
+    return ANCH[ds];
+  }
+  return MD.STOCK_PREV_CLOSE.price;
+}
+// the session containing time t (assumes marketOpen(t))
+function sessionOf(t){
+  let off=nyOffsetMs(),ny=new Date(t+off);
+  let s=new Date(ny);s.setHours(9,30,0,0);
+  let e=new Date(ny);e.setHours(16,0,0,0);
+  let startMs=s.getTime()-off,endMs=e.getTime()-off;
+  let ds=etDateStr(t);
+  let prevClose=closeBefore(startMs-3600000);
+  let close=ANCH[ds];
+  if(close===undefined) // in-progress session: aim at the live quote / a gentle sim target
+    close=quote.ok?quote.price:prevClose*(1+(dayHash(floor(t/86400000))-0.5)*0.02);
+  return {startMs,endMs,prevClose,close,day:floor(startMs/86400000)};
+}
+// synthetic intraday path pinned at the REAL closes (texture only)
+function sessionPrice(t){
+  let s=sessionOf(t);
+  let t01=constrain((t-s.startMs)/(s.endMs-s.startMs),0,1);
+  let base=lerp(s.prevClose,s.close,t01);
+  let pin=sin(t01*PI);
+  let wig=(noise(s.day%1000*97+t01*9.2)-0.5)*s.prevClose*0.016*pin
+         +(noise(s.day%1000*97+t01*52+31)-0.5)*s.prevClose*0.007*pin
+         +(noise(s.day%1000*97+t01*172+77)-0.5)*s.prevClose*0.003*pin;
+  return max(1,base+wig);
+}
 
 function initStockSession(){
-  let now=Date.now();
-  let target=quote.ok?quote.price:simPrice;
-  let start=quote.prevClose;
-  let pts=[];
-  noiseSeed(floor(now/86400000));
+  buildAnchors();
+  let now=Date.now(),pts=[],price=null;
   for(let m=0;m<=1440;m++){
-    let t01=m/1440,t=now-(1440-m)*60000;
-    let vol=sessionVol(t);
-    let base=lerp(start,target,t01);
-    let wig=(noise(m*0.09)-0.5)*2*start*0.005*sqrt(max(0.0001,t01*(1-t01)))*4*vol;
-    let wig2=(noise(m*0.55+50)-0.5)*start*0.0016*vol;
-    pts.push({t,p:max(1,base+wig+wig2)});
+    let t=now-(1440-m)*60000;
+    if(marketOpen(t))price=sessionPrice(t);
+    else if(price===null)price=closeBefore(t);
+    pts.push({t,p:price});
   }
-  pts[pts.length-1].p=target;
-  noiseSeed(floor(random(100000)));
-  simPrice=target;
+  simPrice=pts[pts.length-1].p;
   stockSession={ticks:pts};
 }
 
-// one live tick (called every TICK_MS) — always moves
+// one live tick (called every TICK_MS) — moves only while the market is open
 function tickStock(){
   if(!stockSession)return;
-  let nowMs=Date.now(),vol=sessionVol(nowMs);
-  if(quote.source==='live'&&quote.ok){
-    let cur=stockSession.ticks[stockSession.ticks.length-1].p;
-    simPrice=lerp(cur,quote.price,0.25)+randomGaussian(0,quote.price*0.00012*max(vol,0.35));
+  let nowMs=Date.now();
+  let cur=stockSession.ticks[stockSession.ticks.length-1].p;
+  if(marketOpen(nowMs)){
+    if(quote.source==='live'&&quote.ok){
+      simPrice=lerp(cur,quote.price,0.25)+randomGaussian(0,quote.price*0.00012);
+    } else {
+      simPrice=cur+randomGaussian(0,cur*0.00045)+(closeBefore(nowMs)-cur)*0.0006;
+      if(random()<0.0025)simPrice+=randomGaussian(0,cur*0.002); // occasional jump
+    }
   } else {
-    simPrice+=randomGaussian(0,simPrice*0.00045*vol)+(quote.prevClose-simPrice)*0.0006;
-    if(random()<0.0025*vol)simPrice+=randomGaussian(0,simPrice*0.002); // occasional jump
+    simPrice=cur; // closed: the line rests at the last close
   }
   stockSession.ticks.push({t:nowMs,p:max(1,simPrice)});
   let cutoff=nowMs-86400000;
@@ -232,58 +327,67 @@ function tickEng(){
 }
 
 // ==================== HISTORICAL SERIES ====================
-// Daily engagement candles 2012 -> today, driven entirely by MetaData
-// (eventsPerSec × EU share, interpolated through the canonical series)
+// Daily engagement candles 2012 -> today, driven entirely by MetaData v6
+// (eventsPerMinDay: year-aware weekly curve + seasonal + structural breaks)
 function buildEngHistory(eng){
   allEngBuckets=[];
   let now=Date.now(),k=0;
   for(let t=new Date(2012,0,1).getTime();t<=now;t+=86400000,k++){
     let yf=yearFrac(t);
-    // daily average × canonical weekend dip (weekly ripple shows on 1M zoom)
-    // = eventsPerMinLive integrated over the day (rhythm averages to 1)
-    let base=MD.eventsPerSec(yf)*60*MD.euShare(yf)*MD.dayFactor(new Date(t).getDay());
-    let v=eng.length>0?map(constrain(eng[k%eng.length]/150,0,2),0,2,0.94,1.06):0.96+noise(k*0.06)*0.08;
+    let base=MD.eventsPerMinDay(yf,new Date(t).getDay())*MD.euShare(yf);
+    // era-scaled texture: a small 2012 network is twitchy, a 3.6B-person
+    // network is statistically smooth (noise amplitude shrinks with scale)
+    let ea=constrain(map(yf,2012,2026,1.5,0.7),0.7,1.5);
+    let v=eng.length>0?1+(map(constrain(eng[k%eng.length]/150,0,2),0,2,0.94,1.06)-1)*ea
+                      :1+(noise(k*0.06)-0.5)*0.08*ea;
     let b=base*v;
     let n1=noise(k*0.2)*2-1,n2=noise(k*0.2+7)*2-1,n3=noise(k*0.2+14)*2-1,n4=noise(k*0.2+21)*2-1;
-    let o=b*(1+n1*0.015),c=b*(1+n2*0.015);
-    allEngBuckets.push({ts:new Date(t),open:o,high:max(o,c)*(1+abs(n3)*0.010),low:min(o,c)*(1-abs(n4)*0.010),close:c,engRate:MD.series(MD.ENG_PCT,yf)});
+    let o=b*(1+n1*0.015*ea),c=b*(1+n2*0.015*ea);
+    allEngBuckets.push({ts:new Date(t),open:o,high:max(o,c)*(1+abs(n3)*0.010*ea),low:min(o,c)*(1-abs(n4)*0.010*ea),close:c,engRate:MD.series(MD.ENG_PCT,yf)});
   }
 }
 
-// real stock series for a range, with live price appended
-function stockRange(startTs){
-  let now=new Date();
-  let pts=REAL.filter(p=>p.ts>=startTs&&p.ts<=now).map(p=>({ts:p.ts,price:p.price}));
+// real stock series for a range, with live price appended.
+// monthly=true -> month-end closes only (uniform spacing for 5Y/MAX;
+// the 2025+ daily segment would otherwise be 25x denser than the history)
+let MONTHLY=[];
+function buildMonthly(){
+  MONTHLY=[];let key=null;
+  for(let p of REAL){
+    let k=p.ts.getFullYear()*12+p.ts.getMonth();
+    if(k!==key){MONTHLY.push(p);key=k;}
+    else MONTHLY[MONTHLY.length-1]=p; // keep the LAST close of each month
+  }
+}
+function stockRange(startTs,monthly){
+  let now=new Date(),src=monthly?MONTHLY:REAL;
+  let pts=src.filter(p=>p.ts>=startTs&&p.ts<=now).map(p=>({ts:p.ts,price:p.price}));
   if(pts.length<2){ // range shorter than data resolution — interpolate
-    pts=REAL.slice(-2).map(p=>({ts:p.ts,price:p.price}));
+    pts=src.slice(-2).map(p=>({ts:p.ts,price:p.price}));
   }
   pts.push({ts:now,price:livePrice()});
   return pts;
 }
 
-// 5D: last 5 real daily closes, bridged with dense noisy intraday paths.
-// CONTINUOUS by design — no flat nights or weekends. The market isn't 24/7,
-// but attention is, and this chart follows attention's clock.
-function stock5D(){
-  let dailies=REAL.slice(-6); // includes prev closes as anchors
-  let out=[],N=40; // 40 points per day -> jagged like a real 5D chart
-  for(let i=1;i<dailies.length;i++){
-    let a=dailies[i-1],b=dailies[i];
-    for(let h=0;h<N;h++){
-      let t01=h/(N-1);
-      let base=lerp(a.price,b.price,t01);
-      // layered noise: slow swing + chatter + micro-jitter, pinned at real closes
-      let pin=sin(t01*PI);
-      let wig=(noise(i*97+h*0.23)-0.5)*a.price*0.020*pin
-             +(noise(i*97+h*1.3+31)-0.5)*a.price*0.008*pin
-             +(noise(i*97+h*4.3+77)-0.5)*a.price*0.0035*pin;
-      let ts=new Date(b.ts);ts.setHours(9+floor(t01*6.5),floor((t01*6.5%1)*60),0,0);
-      out.push({ts,price:max(1,base+wig)});
-    }
+// 1W: CALENDAR-TRUE last 7 days on a linear time axis (same axis as the
+// engagement chart above). The line moves only during NASDAQ sessions,
+// pinned at the real closes, and lies flat through nights and weekends —
+// the one chart on this page that is allowed to sleep.
+function stock1W(){
+  let now=Date.now(),t0=now-7*86400000,step=15*60000;
+  let out=[],price=closeBefore(t0);
+  for(let t=t0;t<now;t+=step){
+    if(marketOpen(t))price=sessionPrice(t);
+    else price=closeBefore(t);
+    out.push({ts:new Date(t),price});
   }
-  out.push({ts:new Date(),price:livePrice()});
+  out.push({ts:new Date(now),price:livePrice()});
   return out;
 }
+
+// SMA window per zoom (1D,1W,1M,6M,YTD,1Y,5Y,MAX) — longer zooms use
+// bucketed candles, so windows stay modest in *periods*
+const SMA_WIN=[10,12,7,4,4,8,6,12];
 
 function buildVisible(){
   let zoom=ZOOMS[activeZoom],now=new Date();
@@ -291,27 +395,58 @@ function buildVisible(){
     // handled live in draw (stockSession + engLive)
     visEng=[];visStock=[];smaLine=[];return;
   }
-  if(zoom.days===5){
-    visStock=ds(stock5D(),200,'l');
-    let raw=engHist5D();
-    visEng=ds(raw,200,'c');
-    smaLine=smaFullRes(raw,200);
+  if(zoom.days===7){
+    visStock=ds(stock1W(),280,'l');
+    let raw=engHist1W();
+    visEng=ds(raw,224,'c');
+    smaLine=smaFullRes(raw,224,SMA_WIN[activeZoom]);
   } else {
     let st;
     if(zoom.days===-1)st=new Date(now.getFullYear(),0,1);
     else if(zoom.days===-2)st=REAL[0].ts;
     else st=new Date(now.getTime()-zoom.days*86400000);
-    visStock=ds(stockRange(st),240,'l');
+    // stock: month-end closes only at 5Y/MAX so point spacing is uniform
+    let monthly=(zoom.days===1825||zoom.days===-2);
+    visStock=ds(stockRange(st,monthly),240,'l');
+    // engagement resolution ladder: daily at 1M, weekly at 6M/YTD/1Y,
+    // monthly at 5Y/MAX — kills the weekend-sawtooth aliasing
     let raw=allEngBuckets.filter(b=>b.ts>=st&&b.ts<=now);
+    if(zoom.days===180||zoom.days===-1||zoom.days===365)raw=bucketEng(raw,'w');
+    else if(monthly)raw=bucketEng(raw,'m');
     visEng=ds(raw,200,'c');
-    smaLine=smaFullRes(raw,200);
+    smaLine=smaFullRes(raw,200,SMA_WIN[activeZoom]);
   }
 }
 
-// 10-period moving average computed at FULL resolution, then thinned
-// with the same grouping as ds() so it stays aligned with the candles
-function smaFullRes(raw,mx){
-  const n=10;
+// merge daily candles into weekly ('w') or monthly ('m') candles,
+// SEASONALLY ADJUSTED by day-of-week: each daily close is divided by its
+// known weekday factor before aggregating (standard seasonal adjustment,
+// like "seasonally adjusted" economic series). Without this, every wick
+// spans the entire weekday-vs-weekend swing and a bucket that ends on a
+// weekend paints a fake red candle — pure aliasing, not information.
+// close = bucket mean, wicks = adjusted range, open chains from the
+// previous close like real period charts. Trend, seasonality (Q4/Q1),
+// and the 2018/2020 structural breaks all remain fully visible.
+function bucketEng(raw,mode){
+  let out=[],key=null,cur=null,sum=0,n=0;
+  let flush=()=>{if(cur){cur.close=sum/max(1,n);if(out.length)cur.open=out[out.length-1].close;out.push(cur);}};
+  for(let b of raw){
+    let k=mode==='w'?floor(b.ts.getTime()/604800000):(b.ts.getFullYear()*12+b.ts.getMonth());
+    let adj=b.close/MD.dayFactorY(b.ts.getDay(),yearFrac(b.ts.getTime()));
+    if(k!==key){flush();cur={ts:b.ts,open:adj,high:adj,low:adj,close:adj,engRate:b.engRate};sum=0;n=0;key=k;}
+    else{cur.high=max(cur.high,adj);cur.low=min(cur.low,adj);cur.engRate=b.engRate;}
+    sum+=adj;n++;
+  }
+  flush();
+  return out;
+}
+
+// moving average computed at FULL resolution, then thinned with the
+// same grouping as ds() so it stays aligned with the candles.
+// Window n is zoom-dependent (SMA_WIN) so the line smooths THROUGH the
+// weekly oscillation at long zooms instead of following it.
+function smaFullRes(raw,mx,n){
+  n=n||10;
   let sma=[],s=0;
   for(let i=0;i<raw.length;i++){
     s+=raw[i].close;
@@ -328,11 +463,12 @@ function smaFullRes(raw,mx){
   return out;
 }
 
-// engagement 5D built from the diurnal curve, half-hour resolution + chatter
-function engHist5D(){
+// engagement 1W built from the diurnal curve, half-hour resolution + chatter
+// (7 calendar days — same linear time axis as the 1W stock chart)
+function engHist1W(){
   let now=Date.now(),out=[];
-  for(let h=0;h<240;h++){
-    let t=now-(240-h)*1800000,d=new Date(t);
+  for(let h=0;h<336;h++){
+    let t=now-(336-h)*1800000,d=new Date(t);
     let base=engBaseVal(d.getHours()+d.getMinutes()/60,d.getDay())*csvMult(h)
             *(1+(noise(h*0.15)-0.5)*0.05+(noise(h*0.9+40)-0.5)*0.025);
     let o=base*(1+(noise(h*0.3)-0.5)*0.02),c=base*(1+(noise(h*0.3+5)-0.5)*0.02);
@@ -356,7 +492,7 @@ function ds(arr,mx,type){
 function loadCSVsAsync(){
   let fb=[],ig=[],md=false,id=false;
   // meta_data.csv is SEMICOLON-separated -> parse manually
-  loadStrings('shared/data/meta_data.csv',
+  loadStrings('meta_data.csv',
     function(lines){
       let n=0;
       for(let i=1;i<lines.length;i++){
@@ -372,7 +508,7 @@ function loadCSVsAsync(){
     },
     function(){metaStatus='not found';md=true;if(id)mergeCSV(fb,ig);}
   );
-  loadTable('shared/data/instagram_data.csv','csv','header',
+  loadTable('instagram_data.csv','csv','header',
     function(t){igStatus=nfc(t.getRowCount())+' rows';
       for(let i=0;i<t.getRowCount();i++){let r=t.getRow(i),l=r.getNum('likes')||0,c=r.getNum('comments')||0,s=r.getNum('shares')||0;ig.push(l+c+s);}
       id=true;if(md)mergeCSV(fb,ig);},
@@ -396,10 +532,11 @@ function updateLive(){
   // concurrent = people online right now (MetaData: DAP × minutes-online × rhythm)
   liveEUTarget=MD.concurrent(yf,hr)*MD.euShare(yf)*(0.95+noise(frameCount*0.002)*0.10);
   liveEUUsers=liveEUUsers===0?liveEUTarget:lerp(liveEUUsers,liveEUTarget,0.15);
-  liveGlobalUsers=MD.concurrent(yf,hr);
+  // per-second life: small stochastic breath so the full numbers visibly tick
+  liveGlobalUsers=MD.concurrent(yf,hr)*(0.997+noise(frameCount*0.0023+50)*0.006)+randomGaussian(0,MD.concurrent(yf,hr)*0.0004);
   liveClicksEU=engLive?engLive.val:MD.eventsPerMinLive(yf,hr,d.getDay())*MD.euShare(yf);
-  liveRevEU=MD.euRevPerMin(yf);
-  liveRevGlobal=MD.revPerSec(yf)*60;
+  liveRevEU=MD.euRevPerMin(yf)*(0.997+noise(frameCount*0.0025+90)*0.006)+randomGaussian(0,MD.euRevPerMin(yf)*0.0006);
+  liveRevGlobal=MD.revPerSec(yf)*60*(0.997+noise(frameCount*0.0025+140)*0.006)+randomGaussian(0,MD.revPerSec(yf)*60*0.0006);
 }
 
 // ==================== MAIN LOOP ====================
@@ -418,8 +555,25 @@ function draw(){
 
 function drawTitle(){
   noStroke();
-  fill(C.textBright);TS(21);textAlign(LEFT);text('THE ATTENTION MARKET',L.chartX,32*U);
-  fill(C.textDim);TS(10);text('META · Facebook + Instagram  ·  (EU) ENGAGEMENT vs META:NASDAQ PROFIT (GLOBAL)',L.chartX,48*U);
+  fill(C.textBright);TS(25);textAlign(LEFT);text('THE ATTENTION MARKET',L.chartX,34*U);
+  fill(C.textDim);TS(10);text('META · Facebook + Instagram  ·  EU Engagement vs META:NASDAQ',L.chartX,50*U);
+  drawToggleButtons(L.sideX-10*U); // currency + candles, hugging the sidebar border
+  textAlign(LEFT);
+}
+
+// stacked clickable nav text, top-right INSIDE the sidebar
+function drawNavSidebar(rightX){
+  navRects=[];
+  TS(8);textAlign(RIGHT);
+  NAV_LINKS.forEach((n,i)=>{
+    let y=(14+i*11)*U;
+    let w=textWidth(n.label);
+    let r={x:rightX-w,y:y-8*U,w:w,h:10.5*U,href:n.href};
+    let over=mouseX>=r.x&&mouseX<=r.x+r.w&&mouseY>=r.y&&mouseY<=r.y+r.h;
+    fill(over?C.textBright:C.textDim);
+    text(n.label,rightX,y);
+    navRects.push(r);
+  });
   textAlign(LEFT);
 }
 
@@ -447,9 +601,17 @@ function drawEngCandles(candles,sma,zl,live){
   let periodUp=lv>=vals[0],lc=periodUp?C.green:C.red;
 
   fill(lc);TS(13);textAlign(RIGHT);
-  text((periodUp?'▲ +':'▼ ')+nf(chg,1,2)+'%   '+fmtAct(lv)+' clicks',cx+cw,L.engValueY);
+  let valStr=(periodUp?'▲ +':'▼ ')+nf(chg,1,2)+'%   '+fmtAct(lv)+' engagements';
+  text(valStr,cx+cw,L.engValueY);
+  let valW=textWidth(valStr);
   fill(C.textMid);TS(10);textAlign(LEFT);
-  text('CLICKS / MIN  ·  EU  ·  EST',cx,L.engHeaderY);
+  let hd='ENGAGEMENT ACTIVITY / MIN · EU';
+  text(hd,cx,L.engHeaderY);
+  let hdW=textWidth(hd);
+  // the definition, dimmer — drops out gracefully when width is tight
+  TS(9);fill(C.textDim);
+  let def='  ·  engagements: likes, comments, shares, posts';
+  if(cx+hdW+textWidth(def)<cx+cw-valW-24*U)text(def,cx+hdW,L.engHeaderY);
   textAlign(LEFT);
 
   noFill();stroke(C.divider);strokeWeight(1);rect(cx,ey,cw,eh);
@@ -489,7 +651,7 @@ function drawEngCandles(candles,sma,zl,live){
 function stockXofIdx(i){
   let {chartX:cx,chartW:cw}=L;
   // 5D: index-based (continuous flow, like real terminals)
-  if(ZOOMS[activeZoom].days===5)return cx+(i/(visStock.length-1))*cw;
+  if(ZOOMS[activeZoom].days===7)return cx+(i/(visStock.length-1))*cw;
   // otherwise time-proportional (no distortion when data resolution changes)
   let t0=visStock[0].ts.getTime(),t1=visStock[visStock.length-1].ts.getTime();
   return cx+((visStock[i].ts.getTime()-t0)/max(1,t1-t0))*cw;
@@ -502,6 +664,7 @@ function drawStockChart(){
   let vY=v=>sy+sh-map(v,vMin,vMax,0,sh),xP=stockXofIdx;
   let lv=vals[vals.length-1],chg=((lv-vals[0])/vals[0])*100;
   let periodUp=lv>=vals[0],lc=periodUp?C.green:C.red;
+  if(ZOOMS[activeZoom].days===7&&!marketOpen(Date.now()))lc=periodUp?C.mGreen:C.mRed; // resting
   stockHeader(lv,chg,periodUp,lc);
   stockFrame(cx,sy,cw,sh);
   areaLine(vals.map((v,i)=>[xP(i),vY(v)]),cx,sy,cw,sh,lc);
@@ -509,7 +672,7 @@ function drawStockChart(){
   pricePill(cx+cw,vY(lv),fxs()+nf(fxv(lv),1,2),lc);
   drawEventDiamonds(vY);
   stockYAxis(cx,vY,vMin,vMax);
-  if(ZOOMS[activeZoom].days===5)drawXAxis(visStock.map(d=>d.ts),cx,sy+sh,cw);
+  if(ZOOMS[activeZoom].days===7)drawXAxis(visStock.map(d=>d.ts),cx,sy+sh,cw);
   else drawStockXAxisTime(cx,sy+sh,cw);
   if(hoverStockIdx>=0){stroke(C.textMid+'44');strokeWeight(0.5);drawingContext.setLineDash([4,4]);line(xP(hoverStockIdx),sy,xP(hoverStockIdx),sy+sh);drawingContext.setLineDash([]);noStroke();}
 }
@@ -562,7 +725,10 @@ function drawStockChartLive(){
   let {chartX:cx,chartW:cw,stockY:sy,stockH:sh}=L;
   evScreen=[]; // no diamonds in the live rolling view
   let {ticks}=stockSession;
-  let prevClose=quote.prevClose;
+  // calendar-aware datum: the last COMPLETED session's close (Finnhub's
+  // prev close when the quote is live; when the market is closed this
+  // coincides with the flat line — no misleading gap)
+  let prevClose=quote.ok?quote.prevClose:closeBefore(Date.now());
   let nowMs=Date.now(),t0=nowMs-86400000;
   let pts=ticks.length>500?ds(ticks.map(t=>({ts:t.t,price:t.p})),480,'l').map(d=>({t:d.ts,p:d.price})):ticks;
   if(!pts.length)return;
@@ -576,6 +742,7 @@ function drawStockChartLive(){
   let ref=vals[0]; // 24h-ago reference for the % change
   let chg=((lv-ref)/ref)*100;
   let dayUp=lv>=ref,lc=dayUp?C.green:C.red;
+  if(!marketOpen(Date.now()))lc=dayUp?C.mGreen:C.mRed; // resting: muted color
 
   stockHeader(lv,chg,dayUp,lc,true);
   stockFrame(cx,sy,cw,sh);
@@ -610,12 +777,41 @@ function drawStockChartLive(){
 }
 
 // ---- stock drawing helpers ----
+// today's NASDAQ session (09:30–16:00 ET) expressed in the VIEWER'S
+// local time — computed live, so DST offsets on either side stay correct
+function openHoursLocal(){
+  let off=nyOffsetMs(),now=Date.now(),ny=new Date(now+off);
+  let o=new Date(ny);o.setHours(9,30,0,0);
+  let c=new Date(ny);c.setHours(16,0,0,0);
+  let f=d=>d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  return f(new Date(o.getTime()-off))+'–'+f(new Date(c.getTime()-off));
+}
+
 function stockHeader(lv,chg,up,lc,isDay){
   let {chartX:cx,chartW:cw}=L;
-  fill(lc);TS(13);textAlign(RIGHT);
-  text((up?'▲ +':'▼ ')+nf(chg,1,2)+'%   '+fxs()+nf(fxv(lv),1,2),cx+cw,L.stockValueY);
+  let rx=cx+cw,zd=ZOOMS[activeZoom].days;
+  // 1D / 1W only: honest open/closed tag after the value
+  if(zd===1||zd===7){
+    let open=marketOpen(Date.now());
+    let mlab='·  market '+(open?'open':'closed');
+    fill(open?C.textMid:C.est);TS(9);textAlign(RIGHT);
+    text(mlab,rx,L.stockValueY);
+    rx-=textWidth(mlab)+10*U;
+  }
+  TS(13);
+  let valStr=(up?'▲ +':'▼ ')+nf(chg,1,2)+'%   '+fxs()+nf(fxv(lv),1,2);
+  let valW=textWidth(valStr);
+  fill(lc);textAlign(RIGHT);
+  text(valStr,rx,L.stockValueY);
   fill(C.textMid);TS(10);textAlign(LEFT);
-  text('META · NASDAQ · STOCK MARKET ·'+fxc(),cx,L.stockHeaderY);
+  let hd=fxs()+' · PRICE · META · NASDAQ · stock market value';
+  text(hd,cx,L.stockHeaderY);
+  let hdW=textWidth(hd);
+  // open-hours note — same treatment as the engagements definition;
+  // drops out gracefully when width is tight
+  TS(9);fill(C.textDim);
+  let oh='  ·  open hours: '+openHoursLocal();
+  if(cx+hdW+textWidth(oh)<rx-valW-24*U)text(oh,cx+hdW,L.stockHeaderY);
   textAlign(LEFT);
 }
 function stockFrame(cx,sy,cw,sh){
@@ -673,12 +869,12 @@ function drawXAxis(ts,ax,ay,aw){
 }
 
 function drawZoomButtons(){
-  let bW=42*U,bH=24*U,gap=6*U,sx=L.chartX;
+  let bW=50*U,bH=28*U,gap=7*U,sx=L.chartX;
   ZOOMS.forEach((z,i)=>{
     let x=sx+i*(bW+gap),y=L.zoomY,active=i===activeZoom;
     noStroke();fill(active?'#1c1c1c':C.btnBg);rect(x,y,bW,bH,3);
     if(active){fill(C.green);rect(x+4*U,y+bH-3,bW-8*U,2,1);}
-    fill(active?C.green:C.textMid);TS(11);textAlign(CENTER);text(z.label,x+bW/2,y+bH/2+4*U);
+    fill(active?C.green:C.textMid);TS(13);textAlign(CENTER);text(z.label,x+bW/2,y+bH/2+4.5*U);
   });
   textAlign(LEFT);
 }
@@ -688,21 +884,19 @@ function drawSidebar(){
   stroke(C.divider);strokeWeight(1);line(L.sideX,0,L.sideX,height);noStroke();
   let x=L.sideX+20*U,rw=L.sideW-40*U,y=26*U;
 
-  // LIVE
+  // LIVE (no tag — EST sits next to the individual estimated values)
   let p=sin(millis()*0.006)*0.5+0.5;
   fill(C.green);noStroke();ellipse(x+5*U,y-3*U,(7+p)*U,(7+p)*U);
-  fill(C.green);TS(12);textAlign(LEFT);text('  LIVE',x,y);
-  let lw=textWidth('  LIVE');
-  fill(C.est);TS(9);text('EST',x+lw+7*U,y);
-  drawToggleButtons(x+rw);
+  fill(C.green);TS(12);textAlign(LEFT);text('LIVE',x+16*U,y);
+  drawNavSidebar(x+rw); // next/back/home, top-right of the sidebar
   y+=24*U;
 
   // top three sections — tight stack (all values canonical via MetaData)
-  estLabel(x,y,'Daily Active Users');y+=15*U;
+  estLabel(x,y,'Active Users');y+=15*U;
   sPair(x,rw,y,'EU',nfc(floor(liveEUUsers)),'Global',nfc(floor(liveGlobalUsers)));y+=33*U;
 
   estLabel(x,y,'Engagement / min');y+=15*U;
-  sPair(x,rw,y,'EU',fmtAct(liveClicksEU),'Global',fmtAct(liveClicksEU/MD.euShare(nowYf())));y+=33*U;
+  sPair(x,rw,y,'EU',nfc(floor(liveClicksEU)),'Global',nfc(floor(liveClicksEU/MD.euShare(nowYf()))));y+=33*U;
 
   estLabel(x,y,'Revenue / min');y+=15*U;
   sPair(x,rw,y,'EU',fxs()+nfc(floor(fxv(liveRevEU))),'Global',fxs()+nfc(floor(fxv(liveRevGlobal))));y+=37*U;
@@ -714,22 +908,22 @@ function drawSidebar(){
   let yf=nowYf();
   let arpu=MD.euArpuYear(yf),arpuChg=round((arpu/MD.euArpuYear(2012)-1)*100);
   fill(C.textMid);TS(12);text('ARPU Europe / yr',x,y);y+=16*U;
-  fill(C.textBright);TS(16);textAlign(LEFT);text(fxs()+nf(fxv(arpu),1,2),x+8*U,y);
+  fill(C.textBright);TS(13);textAlign(LEFT);text(fxs()+nf(fxv(arpu),1,2),x+8*U,y);
   fill(C.green);TS(12);textAlign(RIGHT);text('+'+nfc(arpuChg)+'% ↑',x+rw,y);y+=29*U;
 
   let engRate=MD.series(MD.ENG_PCT,yf),engChg=round((engRate/MD.ENG_PCT[0]-1)*100);
   textAlign(LEFT);fill(C.textMid);TS(12);text('Engagement Rate',x,y);y+=16*U;
-  fill(C.textBright);TS(16);text(nf(engRate,1,2)+'%',x+8*U,y);
+  fill(C.textBright);TS(13);text(nf(engRate,1,2)+'%',x+8*U,y);
   fill(C.red);TS(12);textAlign(RIGHT);text(engChg+'% ↓',x+rw,y);y+=29*U;
 
   textAlign(LEFT);
   estLabel(x,y,'Revenue / Session');y+=16*U;
-  fill(C.textBright);TS(16);text(fxs()+nf(fxv(MD.revPerSession(yf)),1,4),x+8*U,y);y+=29*U;
+  fill(C.textBright);TS(13);text(fxs()+nf(fxv(MD.revPerSession(yf)),1,4),x+8*U,y);y+=29*U;
 
   let pas=MD.passivity(yf),pasChg=round((pas/MD.passivity(2012)-1)*100);
   textAlign(LEFT);fill(C.textMid);TS(12);text('Passivity Index',x,y);y+=13*U;
   fill(C.est);TS(9);text('% of session with no conscious action',x,y);y+=15*U;
-  fill(C.textBright);TS(16);text(nf(pas*100,1,0)+'%',x+8*U,y);
+  fill(C.textBright);TS(13);text(nf(pas*100,1,0)+'%',x+8*U,y);
   fill(C.red);TS(12);textAlign(RIGHT);text('+'+pasChg+'% ↑',x+rw,y);y+=32*U;
 
   sDiv(x,rw,y);y+=19*U;
@@ -745,7 +939,58 @@ function drawSidebar(){
   textAlign(LEFT);
 
   // ── rotating event card, pinned to the bottom of the sidebar
-  drawEventCard(x,rw,max(y+12*U,height-208*U));
+  let cardTop=max(y+12*U,height-224*U);
+  drawEventCard(x,rw,cardTop);
+
+  // ── HOW TO READ — a floating layer in the bottom-right corner,
+  // in FRONT of the annotation card (drawn after = on top); the chip
+  // stays on top of the open panel so it can close it again
+  if(howOpen)drawHowPanel(x,rw);
+  drawHowButton(x,rw,cardTop);
+}
+
+let howPanelTop=0;
+function drawHowButton(x,rw,cardTop){
+  // small chip riding the BOTTOM edge of the annotation card (and of the
+  // open panel — same spot, so opening and closing is one place)
+  let q='?',rest='how to read'+(howOpen?'  ▾':'  ▴');
+  TS(12);let qw=textWidth(q);
+  TS(9.5);let restw=textWidth(rest);
+  let bw=qw+restw+24*U,bh=21*U;
+  let bot=height-16*U; // card / panel bottom edge
+  let bx=x+rw+10*U-bw,by=bot-bh/2;
+  fill(howOpen?'#1f1f1f':'#161616');stroke(howOpen?C.textMid:'#4a4a4a');strokeWeight(1.5);
+  rect(bx,by,bw,bh,11*U);noStroke();
+  fill(howOpen?C.textBright:C.textMid);textAlign(LEFT);
+  TS(12);text(q,bx+9*U,by+bh/2+4*U);       // the '?' stays bigger
+  TS(9.5);text(rest,bx+9*U+qw+6*U,by+bh/2+3.5*U);
+  howBtnRect={x:bx,y:by,w:bw,h:bh};
+}
+
+// pops up OVER the annotation card (and slightly the numbers above it),
+// anchored to the bottom-right corner of the screen
+function drawHowPanel(x,rw){
+  // measure content height first
+  TS(11);let descL=wrapText(HOW.desc,rw);
+  TS(11);let metaL=wrapText(HOW.metaphor,rw-12*U);
+  TS(11);let instL=[];HOW.lines.forEach(l=>{instL=instL.concat(wrapText(l,rw));});
+  let hgt=(26+9)*U+descL.length*15.5*U+9*U+metaL.length*15.5*U+13*U+instL.length*16*U+22*U; // extra tail so the chip never covers the last line
+  let bot=height-16*U,top=max(10*U,bot-hgt);
+  howPanelTop=top;
+  fill('#101010');stroke(C.textMid);strokeWeight(1.5);
+  rect(x-10*U,top,rw+20*U,bot-top,5);noStroke();
+  let y=top+24*U;
+  fill(C.textBright);TS(12);textAlign(LEFT);text('◈ '+HOW.title,x,y);y+=22*U;
+  fill('#c9c9c9');TS(11);
+  for(let ln of descL){text(ln,x,y);y+=15.5*U;}
+  y+=9*U;
+  // metaphor — italic, with a quiet left bar
+  stroke(C.textDim);strokeWeight(2);line(x,y-10*U,x,y-12*U+metaL.length*15.5*U);noStroke();
+  textStyle(ITALIC);fill(C.textMid);TS(11);
+  for(let ln of metaL){text(ln,x+12*U,y);y+=15.5*U;}
+  textStyle(NORMAL);y+=13*U;
+  fill(C.textMid);TS(11);
+  for(let ln of instL){text(ln,x,y);y+=16*U;}
 }
 
 function wrapText(s,w){
@@ -768,35 +1013,35 @@ function drawEventCard(x,rw,top){
   let y=top+24*U;
   textAlign(LEFT);noStroke();
   // header + source chip beside it
-  fill(C.textBright);TS(10);
+  fill(C.textBright);TS(11);
   let tl=wrapText('◆ '+ev.title,rw);
-  for(let i=0;i<tl.length;i++){text(tl[i],x,y);if(i<tl.length-1)y+=13*U;}
+  for(let i=0;i<tl.length;i++){text(tl[i],x,y);if(i<tl.length-1)y+=14.5*U;}
   let lastW=textWidth(tl[tl.length-1]);
-  TS(8);
-  let lbl='↗ '+ev.domain,chW=textWidth(lbl)+10*U,chH=13*U;
-  let chx=x+lastW+8*U,chy=y-10*U;
-  if(chx+chW>x+rw){y+=15*U;chx=x;chy=y-10*U;} // wraps below if the title line is full
+  TS(9);
+  let lbl='↗ '+ev.domain,chW=textWidth(lbl)+10*U,chH=14*U;
+  let chx=x+lastW+8*U,chy=y-11*U;
+  if(chx+chW>x+rw){y+=16*U;chx=x;chy=y-11*U;} // wraps below if the title line is full
   fill('#1a1a1a');stroke(C.textDim+'55');strokeWeight(1);rect(chx,chy,chW,chH,3);noStroke();
-  fill(C.textDim);text(lbl,chx+5*U,chy+9.5*U);
+  fill(C.textDim);text(lbl,chx+5*U,chy+10.5*U);
   linkRect={x:chx,y:chy,w:chW,h:chH,url:ev.url};
-  y+=19*U;
+  y+=20*U;
   // market line
   let mc=ev.mDir>0?C.mGreen:ev.mDir<0?C.mRed:C.textMid;
   let mSym=ev.mDir>0?'▲ ':ev.mDir<0?'▼ ':'▬ ';
-  fill(C.textDim);TS(9);text('MARKET',x,y);
-  fill(mc);TS(10);
-  for(let ln of wrapText(mSym+ev.mText,rw-70*U)){text(ln,x+70*U,y);y+=13*U;}
+  fill(C.textDim);TS(10);text('MARKET',x,y);
+  fill(mc);TS(11);
+  for(let ln of wrapText(mSym+ev.mText,rw-76*U)){text(ln,x+76*U,y);y+=14.5*U;}
   y+=6*U;
   // attention line
   let ac=ev.aDir>0?C.mGreen:ev.aDir<0?C.mRed:C.textMid;
   let aSym=ev.aDir>0?'▲ ':ev.aDir<0?'▼ ':'▬ ';
-  fill(C.textDim);TS(9);text('ATTENTION',x,y);
-  fill(ac);TS(10);
-  for(let ln of wrapText(aSym+ev.aText,rw-70*U)){text(ln,x+70*U,y);y+=13*U;}
+  fill(C.textDim);TS(10);text('ATTENTION',x,y);
+  fill(ac);TS(11);
+  for(let ln of wrapText(aSym+ev.aText,rw-76*U)){text(ln,x+76*U,y);y+=14.5*U;}
   y+=7*U;
   // quote
-  textStyle(ITALIC);fill('#bdbdbd');TS(10);
-  for(let ln of wrapText('“'+ev.quote+'”',rw)){text(ln,x,y);y+=13*U;}
+  textStyle(ITALIC);fill('#bdbdbd');TS(11);
+  for(let ln of wrapText('“'+ev.quote+'”',rw)){text(ln,x,y);y+=14.5*U;}
   textStyle(NORMAL);
 }
 
@@ -807,10 +1052,13 @@ function estLabel(x,y,label){
 }
 function sDiv(x,w,y){stroke(C.divider);strokeWeight(0.5);line(x,y,x+w,y);noStroke();}
 function sPair(x,rw,y,l1,v1,l2,v2){
+  // full numbers can get long — shrink the value size until both rows fit
+  let vs=16,avail=rw-58*U;
+  TS(vs);while(vs>10&&max(textWidth(v1),textWidth(v2))>avail){vs-=0.5;TS(vs);}
   fill(C.textDim);TS(11);textAlign(LEFT);text(l1,x+10*U,y);
-  fill(C.textBright);TS(14);textAlign(RIGHT);text(v1,x+rw,y);
+  fill(C.textBright);TS(vs);textAlign(RIGHT);text(v1,x+rw,y);
   fill(C.textDim);TS(11);textAlign(LEFT);text(l2,x+10*U,y+15*U);
-  fill(C.textBright);TS(14);textAlign(RIGHT);text(v2,x+rw,y+15*U);
+  fill(C.textBright);TS(vs);textAlign(RIGHT);text(v2,x+rw,y+15*U);
   textAlign(LEFT);
 }
 function sRow(x,rw,y,label,val){
@@ -827,7 +1075,7 @@ function sRowS(x,rw,y,label,val){ // smaller variant for the report block
 // ---- sidebar top-right toggle buttons: currency + candles ----
 function drawToggleButtons(rightX){
   toggleRects=[];
-  let bW=28*U,bH=20*U,gap=6*U,y=8*U;
+  let bW=28*U,bH=20*U,gap=6*U,y=10*U; // top-right corner of the chart column
   let defs=[
     {label:fxs(),on:showEUR,key:'fx'},
     {label:showCandles?'╽╿':'∿',on:showCandles,key:'candles'},
@@ -847,11 +1095,10 @@ function drawToggleButtons(rightX){
 function drawFooter(){
   let maxW=L.sideX-20-L.chartX;
   stroke(C.divider);strokeWeight(0.5);line(L.chartX,L.footerY-8,L.sideX-20,L.footerY-8);noStroke();
-  fill(C.textDim);TS(8);textAlign(LEFT);
+  fill(C.textDim);TS(7);textAlign(LEFT);
   let fxNote=showEUR?'  ·  FX: ECB '+nf(fx.rate,1,3)+' €/$'+(fx.live?'':' (offline rate)'):'';
   text('Stock: S&P Global / MacroTrends · real closing prices 2012–2026 · Live: Finnhub'+fxNote,L.chartX,L.footerY,maxW);
   text('Engagement: MetaData v'+MD.version+' (Meta IR / SEC 10-K · Rival IQ / Socialinsider · eMarketer) · texture: Kaggle “Social Media Engagement Report” · “Instagram Analytics Dataset”',L.chartX,L.footerY+12*U,maxW);
-  text('meta_data.csv ('+metaStatus+') · instagram_data.csv ('+igStatus+')',L.chartX,L.footerY+24*U,maxW);
   textAlign(LEFT);
 }
 
@@ -863,7 +1110,7 @@ function drawHoverTooltips(){
     let bw=190*U;
     let bx=x+10*U;if(bx+bw>sideX-10)bx=x-bw-10*U;
     fill('#111111f2');stroke(C.divider);strokeWeight(1);rect(bx,ey+12*U,bw,52*U,4);noStroke();
-    fill(lc);TS(15);textAlign(LEFT);text(fmtAct(d.close)+' clicks',bx+12*U,ey+34*U);
+    fill(lc);TS(15);textAlign(LEFT);text(fmtAct(d.close)+' engagements',bx+12*U,ey+34*U);
     fill(C.textMid);TS(10);text(fmtDate(d.ts),bx+12*U,ey+52*U);
     textAlign(LEFT);
   }
@@ -898,7 +1145,9 @@ function mouseMoved(){
   }
   let overLink=linkRect&&mouseX>=linkRect.x&&mouseX<=linkRect.x+linkRect.w&&mouseY>=linkRect.y&&mouseY<=linkRect.y+linkRect.h;
   let overToggle=toggleRects.some(t=>mouseX>=t.x&&mouseX<=t.x+t.w&&mouseY>=t.y&&mouseY<=t.y+t.h);
-  cursor(eventHover>=0||overLink||overToggle?HAND:ARROW);
+  let overNav=navRects.some(r=>mouseX>=r.x&&mouseX<=r.x+r.w&&mouseY>=r.y&&mouseY<=r.y+r.h);
+  let overHow=howBtnRect&&mouseX>=howBtnRect.x&&mouseX<=howBtnRect.x+howBtnRect.w&&mouseY>=howBtnRect.y&&mouseY<=howBtnRect.y+howBtnRect.h;
+  cursor(eventHover>=0||overLink||overToggle||overNav||overHow?HAND:ARROW);
 
   if(mouseX>=cx&&mouseX<=cx+cw&&mouseY>=ey&&mouseY<=ey+eh&&visEng.length>1)
     hoverEngIdx=constrain(round(map(mouseX,cx,cx+cw,0,visEng.length-1)),0,visEng.length-1);
@@ -911,7 +1160,7 @@ function mouseMoved(){
       let best=-1,bd=Infinity;
       for(let i=0;i<visStock.length;i++){let dd=abs(visStock[i].ts.getTime()-tm);if(dd<bd){bd=dd;best=i;}}
       hoverStockIdx=bd<10*60000?best:-1; // only when near the drawn line
-    } else if(ZOOMS[activeZoom].days===5){
+    } else if(ZOOMS[activeZoom].days===7){
       hoverStockIdx=constrain(round(map(mouseX,cx,cx+cw,0,visStock.length-1)),0,visStock.length-1);
     } else {
       // time-proportional inverse mapping -> nearest point in time
@@ -925,7 +1174,7 @@ function mouseMoved(){
 }
 
 function mousePressed(){
-  let bW=42*U,gap=6*U,bH=24*U;
+  let bW=50*U,gap=7*U,bH=28*U;
   ZOOMS.forEach((z,i)=>{
     let x=L.chartX+i*(bW+gap),y=L.zoomY;
     if(mouseX>=x&&mouseX<=x+bW&&mouseY>=y&&mouseY<=y+bH){activeZoom=i;buildVisible();}
@@ -933,13 +1182,25 @@ function mousePressed(){
   // open the event card's source article
   if(linkRect&&mouseX>=linkRect.x&&mouseX<=linkRect.x+linkRect.w&&mouseY>=linkRect.y&&mouseY<=linkRect.y+linkRect.h)
     window.open(linkRect.url,'_blank');
-  // sidebar toggles: currency / candles
+  // toggles (left of the sidebar): currency / candles
   for(let t of toggleRects){
     if(mouseX>=t.x&&mouseX<=t.x+t.w&&mouseY>=t.y&&mouseY<=t.y+t.h){
       if(t.key==='fx')showEUR=!showEUR;
       else showCandles=!showCandles;
     }
   }
+  // nav corner links
+  for(let r of navRects){
+    if(mouseX>=r.x&&mouseX<=r.x+r.w&&mouseY>=r.y&&mouseY<=r.y+r.h){
+      if(r.href&&r.href!=='#')window.location.href=r.href;
+      return;
+    }
+  }
+  // how-to-read: button toggles; clicking the open panel closes it
+  if(howBtnRect&&mouseX>=howBtnRect.x&&mouseX<=howBtnRect.x+howBtnRect.w&&mouseY>=howBtnRect.y&&mouseY<=howBtnRect.y+howBtnRect.h){
+    howOpen=!howOpen;return;
+  }
+  if(howOpen&&mouseX>=L.sideX)howOpen=false;
 }
 
 function fmtAct(v){

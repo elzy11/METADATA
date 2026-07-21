@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#1 the attention market — intro</title>
+<style>
+  /* same design system as metadata-login / metadata-survey */
+  :root {
+    --fb-blue: #2374E1;
+    --fb-blue-hover: #3982E4;
+    --accent: #2D88FF;
+    --bg: #18191A;
+    --card: #242526;
+    --text: #E4E6EB;
+    --secondary: #B0B3B8;
+    --divider: #3E4042;
+    --input-bg: #3A3B3C;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI Historic", "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg); color: var(--text); font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .wrap { max-width: 780px; margin: 0 auto; padding: 70px 16px 48px; }
+
+  .wordmark {
+    position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 50;
+    color: var(--accent); font-size: 19px; font-weight: 700; letter-spacing: -0.8px;
+    font-family: Helvetica, Arial, sans-serif; user-select: none;
+  }
+
+  /* ---------- title + unified subtitle ---------- */
+  .viz-title {
+    text-align: center; font-size: clamp(28px, 5vw, 38px); font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .viz-title .h { color: var(--accent); }
+  .viz-sub {
+    text-align: center; font-weight: 700; font-size: 17px; letter-spacing: .5px;
+    margin-bottom: 2px;
+  }
+  .viz-how {
+    text-align: center; color: var(--accent); font-style: italic; font-size: 15.5px;
+    margin-bottom: 22px;
+  }
+
+  /* ---------- card ---------- */
+  .card {
+    background: var(--card); border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,.5);
+    padding: 22px 28px 26px; position: relative;
+  }
+  .card-path {
+    color: var(--secondary); font-size: 13px; letter-spacing: .5px; padding-bottom: 10px;
+  }
+  .head-divider { height: 1px; background: var(--divider); margin: 0 -28px 6px; }
+
+  .sec { padding: 14px 0 2px; }
+  .sec + .sec { border-top: 1px solid var(--divider); margin-top: 14px; }
+  .sec-label {
+    color: var(--accent); font-size: 14px; font-weight: 700; letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .sec p { font-size: 16px; line-height: 1.7; color: var(--text); }
+
+  .metaphor {
+    border-left: 2px solid var(--accent);
+    padding: 4px 0 4px 14px;
+    font-size: 16.5px; line-height: 1.7;
+  }
+  .note {
+    margin-top: 10px; font-size: 0.86rem; opacity: 0.75; color: #c7c6c6; line-height: 1.7;
+  }
+
+  /* ---------- icons legend ---------- */
+  .legend { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
+  .legend-row { display: flex; align-items: center; gap: 14px; }
+  .icon-box {
+    width: 50px; height: 50px; flex-shrink: 0; border-radius: 8px;
+    border: 1px solid var(--divider); background: var(--input-bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: var(--accent);
+  }
+  .legend-text .lname { font-size: 14.5px; font-weight: 700; letter-spacing: .3px; }
+  .legend-text .ldesc { font-size: 13.5px; color: var(--secondary); margin-top: 2px; line-height: 1.5; }
+
+  /* candle mini-icon (green/red like the viz) */
+  .candles { display: flex; gap: 3px; align-items: center; height: 22px; }
+  .candles i { display: block; width: 4px; border-radius: 1px; }
+  .candles i:nth-child(1) { height: 15px; background: #00d97e; }
+  .candles i:nth-child(2) { height: 9px;  background: #ef5350; }
+  .candles i:nth-child(3) { height: 19px; background: #00d97e; }
+
+  /* ---------- disclaimer + data (kept deliberately tiny) ---------- */
+  .disclaimer {
+    font-size: 0.75rem; color: #8a8d91; line-height: 1.65; letter-spacing: .2px;
+    border-left: 1px solid var(--divider); padding-left: 12px; margin-bottom: 10px;
+  }
+  .data-line { font-size: 0.66rem; color: #6d7378; line-height: 1.8; letter-spacing: .2px; }
+  .data-line span { color: #5a8fd8; }
+
+  /* ---------- fixed corner buttons ---------- */
+  .corner-btn {
+    position: fixed; top: 16px; z-index: 50;
+    font-family: inherit; font-size: 15px; font-weight: 600;
+    padding: 9px 22px; border-radius: 6px; border: none; cursor: pointer;
+    text-decoration: none; display: inline-block; transition: background .1s;
+  }
+  .corner-btn:hover { text-decoration: none; }
+  .corner-btn.back { left: 16px; background: var(--input-bg); color: var(--text); }
+  .corner-btn.back:hover { background: #4E4F50; }
+  .corner-btn.next { right: 16px; background: var(--fb-blue); color: #fff; }
+  .corner-btn.next:hover { background: var(--fb-blue-hover); }
+
+  /* ---------- footer ---------- */
+  .keyhint{
+    margin-top:24px;color:var(--secondary);
+    font-size:11px;letter-spacing:1px;text-align:center;
+  }
+  .keyhint kbd{
+    display:inline-block;background:var(--input-bg);
+    border:1px solid var(--divider);border-radius:3px;
+    padding:1px 5px;font-family:inherit;font-size:11px;color:var(--text);
+  }
+</style>
+</head>
+<body>
+
+<a class="corner-btn back" href="index.html">‹ back</a>
+<a class="corner-btn next" href="market.html">next ›</a>
+
+<div class="wrap">
+  <div class="wordmark">metadata</div>
+
+  <h1 class="viz-title"><span class="h">#1</span> the attention market</h1>
+  <div class="viz-sub">value · data · (daily)</div>
+  <div class="viz-how">how it works</div>
+
+  <div class="card">
+    <div class="card-path">~/metaphors/01_attention_market/intro</div>
+    <div class="head-divider"></div>
+
+    <!-- metaphor first -->
+    <div class="sec">
+      <div class="sec-label">metaphor</div>
+      <div class="metaphor">
+      engagement as stock — every like, comment and share is a trade,
+      and your attention is the asset being priced. Raw material.<br>
+      Wall Street values Meta in dollars; the feed values you in engagement.
+      Two markets, one company, one closes every night, the other never sleeps.
+      </div>
+      <div class="note">
+        This is what they publish, what they admit to - the evidence.
+        Concrete numbers: engagement rates, revenue per minute, the financial result of designed behaviour.
+        Architecture as law — the technical choices that make extraction not just possible but invisible.
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-label">description</div>
+      <p>A live trading terminal with two charts for the same company. On top, the attention
+      market: engagement per minute in the EU, drawn as candlesticks that breathe with the day
+      and tick every second. Below it, the money: META on NASDAQ, real closing prices from the
+      2012 IPO to a live quote. Zoom from one day to fourteen years — and watch the moments
+      where the two lines disagree: the money panics, the attention never flinches.</p>
+    </div>
+
+    <div class="sec">
+      <div class="sec-label">icons</div>
+      <div class="legend">
+        <div class="legend-row">
+          <div class="icon-box"><span class="candles"><i></i><i></i><i></i></span></div>
+          <div class="legend-text">
+            <div class="lname">candles — the attention market</div>
+            <div class="ldesc">engagement events (likes, comments, shares) per minute, EU · green up, red down · trades 24/7 · modeled, marked EST</div>
+          </div>
+        </div>
+        <div class="legend-row">
+          <div class="icon-box">
+            <svg width="26" height="16" viewBox="0 0 26 16" fill="none">
+              <path d="M1 13 L6 10 L10 12 L15 6 L19 8 L25 2" stroke="#2D88FF" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="legend-text">
+            <div class="lname">line — the money</div>
+            <div class="ldesc">META:NASDAQ, real closing prices 2012 &rarr; now, live price ticking · switchable to &euro;</div>
+          </div>
+        </div>
+        <div class="legend-row">
+          <div class="icon-box">&#9670;</div>
+          <div class="legend-text">
+            <div class="lname">diamonds — the moments</div>
+            <div class="ldesc">eleven real events where the two markets split: scandals, crashes, verdicts, record highs · hover one, or let the card rotate · each links to its source</div>
+          </div>
+        </div>
+        <div class="legend-row">
+          <div class="icon-box" style="font-size:11px;letter-spacing:1px;">1D&middot;MAX</div>
+          <div class="legend-text">
+            <div class="lname">controls</div>
+            <div class="ldesc">zoom buttons from one live day to fourteen years · hover any point for exact values · toggles top-right: $/&euro; and candles&harr;line</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-label">data</div>
+      <p class="disclaimer">
+      Independent academic project · Vrije Universiteit Amsterdam ·
+      Not affiliated with Meta Platforms, Inc. · Stock prices and user counts from public filings ·
+      Engagement volumes modeled and marked EST · No personal data collected or shown.
+      </p>
+      <p class="data-line">
+        source: <span>Meta IR / SEC 10-K</span> &middot; <span>S&amp;P Global via stockanalysis.com</span> &middot;
+        <span>MacroTrends</span> &middot; <span>Finnhub</span> (live quote) &middot; <span>ECB</span> (fx) &middot;
+        <span>Forrester 2014</span> &middot; <span>Rival IQ / Socialinsider</span> benchmarks &middot;
+        texture: <span>Kaggle &ldquo;Social Media Engagement Report&rdquo; / &ldquo;Instagram Analytics Dataset&rdquo;</span> (synthetic)
+        &middot; period: <span>2012 &rarr; now</span> &middot; units: <span>engagement events / min (EST) &amp; USD</span>
+      </p>
+    </div>
+
+  </div>
+
+  <div class="keyhint">
+    <kbd>H</kbd> home &nbsp; <kbd>N</kbd> next &nbsp; <kbd>B</kbd> back
+  </div>
+</div>
+
+<script src="shared/nav.js"></script>
+</body>
+</html>

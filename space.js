@@ -162,7 +162,7 @@ function viewDow() {
 // (v3 rhythmWeek: weekends damped, weekly average preserved; the
 // dayFactor guard keeps the sketch running against a pre-v3 module)
 function activeSessions(yf) {
-  const df = MetaData.dayFactor ? MetaData.dayFactor(viewDow()) : 1;
+  const df = MetaData.dayFactor ? MetaData.dayFactor(viewDow(), yf) : 1;
   return MetaData.concurrent(yf, localHourFloat()) * df;
 }
 
@@ -181,6 +181,24 @@ function revCumTotal(yf) {
     ? MetaData.revCumTotal(yf)
     : 6.94e9 + MetaData.revCum(yf);
 }
+
+// cumulative ADVERTISING revenue incl. pre-2012 (v7 module helper;
+// fallback approximates ads as 97.6% of total if pre-v7 loads)
+function adRevCumTotal(yf) {
+  return MetaData.adRevCumTotal
+    ? MetaData.adRevCumTotal(yf)
+    : revCumTotal(yf) * 0.976;
+}
+
+// ---- navigation targets (FAKE URLS — replace with your real pages) ----
+const NAV_NEXT = 'end-survey.html';
+const NAV_BACK = 'spaceintro.html';
+const NAV_HOME = 'index.html';
+
+// ---- display currency: EUR by default, [\u20ac/$] toggle switches to USD ----
+let currency = 'EUR';
+function fxRate() { return currency === 'EUR' ? (MetaData.FX_EUR ? MetaData.FX_EUR.rate : 0.877) : 1; }
+function curSym() { return currency === 'EUR' ? '\u20ac' : '$'; }
 
 // ------------------------------------------------------------------
 // CSV — per-star engagement propensity, calibrated to mean 1
@@ -569,11 +587,100 @@ function buildBackground() {
 }
 
 // ------------------------------------------------------------------
+// HOW-TO-READ CARD — built by the sketch itself (no HTML edits needed).
+// Collapsed chip bottom-right; expands on click. DOM elements sit on
+// top of the canvas, so their clicks never reach the slider.
+// ------------------------------------------------------------------
+function buildHowToRead() {
+  if (document.getElementById('htr')) return;
+
+  const css = document.createElement('style');
+  css.textContent = `
+    #htr{position:fixed;right:24px;bottom:72px;z-index:9;
+      display:flex;flex-direction:column;align-items:flex-end;gap:8px;
+      font-family:'Courier New',Courier,monospace;}
+    #htr-chip{font-family:inherit;font-size:12px;letter-spacing:1px;
+      color:rgba(192,206,222,.9);background:rgba(1,2,5,.85);
+      border:1px solid rgba(150,168,188,.5);padding:7px 14px;cursor:pointer;}
+    #htr-chip:hover,#cur-btn:hover{background:rgba(30,40,60,.9);}
+    #cur-btn{font-family:inherit;font-size:10px;letter-spacing:0;
+      color:rgba(192,206,222,.9);background:rgba(1,2,5,.85);
+      border:1px solid rgba(150,168,188,.5);padding:3px 8px;cursor:pointer;}
+    #htr-panel{width:min(340px,86vw);max-height:60vh;overflow-y:auto;
+      background:rgba(1,2,5,.94);border:1px solid rgba(150,168,188,.5);
+      padding:16px 18px;color:rgba(172,188,206,.95);
+      font-size:12px;line-height:1.65;}
+    #htr-head{display:flex;justify-content:space-between;align-items:center;
+      color:rgba(192,206,222,1);font-size:13px;letter-spacing:1px;
+      margin-bottom:10px;}
+    #htr-close{cursor:pointer;padding:0 4px;color:rgba(150,168,188,.8);}
+    #htr-close:hover{color:#fff;}
+    #htr-panel .htr-metaphor{border-left:2px solid rgba(150,168,188,.5);
+      padding-left:10px;margin-bottom:10px;color:rgba(192,206,222,.95);}
+    #htr-panel p{margin-bottom:10px;}
+    #htr-panel .htr-instr{color:rgba(150,168,188,.9);font-size:11.5px;}
+  `;
+  document.head.appendChild(css);
+
+  const root = document.createElement('div');
+  root.id = 'htr';
+  root.innerHTML = `
+    <button id="cur-btn" title="switch currency">$</button>
+    <button id="htr-chip">? how to read</button>
+    <div id="htr-panel" hidden>
+      <div id="htr-head"><span>? how to read</span><span id="htr-close">&times;</span></div>
+      <p class="htr-metaphor">
+        attention as gravity — every session online is a star; the black hole
+        at the center is the advertising revenue extracted from all of them.
+      </p>
+      <p>
+        each small star is 1,000 real sessions happening right now, following
+        the platform's true daily and weekly rhythm. the larger stars are
+        single users, simulated live at true statistical rates — pink booms
+        are their interactions. cyan sparks are the world's engagement,
+        one shown per 10,000 real events. the black hole's volume is every
+        advertising dollar taken since 2004; sessions that stay too long
+        sink into it.
+      </p>
+      <p>
+        time here is your now, transposed: travelling to 2021 shows that
+        year's real population and weekly rhythm — but always at your
+        current hour of day, on that date's true weekday. you are not
+        watching a recording of the past; you are visiting it at this
+        exact moment.
+      </p>
+      <p class="htr-instr">
+        drag the timeline &mdash; jump to any date, 2012 &rarr; now<br>
+        tap [&larr;][&rarr;] &mdash; step half a year<br>
+        hold [&larr;][&rarr;] &mdash; glide through time<br>
+        [F] &mdash; time-lapse &times;60 gravity<br>
+        &euro; / $ (top right) &mdash; switch currency
+      </p>
+    </div>`;
+  document.body.appendChild(root);
+
+  const chip = document.getElementById('htr-chip');
+  const panel = document.getElementById('htr-panel');
+  document.getElementById('htr-close').addEventListener('click', () => {
+    panel.hidden = true; chip.hidden = false;
+  });
+  chip.addEventListener('click', () => {
+    panel.hidden = false; chip.hidden = true;
+  });
+  const curBtn = document.getElementById('cur-btn');
+  curBtn.addEventListener('click', () => {
+    currency = currency === 'EUR' ? 'USD' : 'EUR';
+    curBtn.textContent = currency === 'EUR' ? '$' : '\u20ac';
+  });
+}
+
+// ------------------------------------------------------------------
 function setup() {
   createCanvas(windowWidth, windowHeight);
   pixelDensity(Math.min(window.devicePixelRatio || 1, 2));
   frameRate(60);
   textFont('monospace');
+  buildHowToRead();
   buildField();
   buildBackground();
   initSwarm();
@@ -647,8 +754,8 @@ function draw() {
   const minDim = Math.min(width, height);
   const sizeF = map(dau, DAU_B[0], DAU_B[DAU_B.length - 1], P.sizeFMin, 1.0);
   const rimPx = minDim * P.radius * sizeF;
-  // option B: the void's VOLUME = cumulative revenue extracted since 2004
-  const voidN = P.voidMax * Math.cbrt(revCumTotal(yf) / revCumTotal(nowYearFloat()));
+  // the void's VOLUME = cumulative ADVERTISING revenue extracted since 2004
+  const voidN = P.voidMax * Math.cbrt(adRevCumTotal(yf) / adRevCumTotal(nowYearFloat()));
   const tiltNow = P.tilt + P.camDrift * Math.sin(simT * P.camRate);
 
   // ---- hero population ----
@@ -814,14 +921,16 @@ function drawHUD(yf, dau, arpu, eng, sessions) {
   const passivity = MetaData.passivity(yf) * 100;
 
   let stamp;
+  const DOWS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
   if (isNow) {
     const d = new Date();
-    stamp = `${d.getFullYear()}-${nf(d.getMonth() + 1, 2)}-${nf(d.getDate(), 2)} ` +
-      `${nf(d.getHours(), 2)}:${nf(d.getMinutes(), 2)}:${nf(d.getSeconds(), 2)} LIVE`;
+    stamp = `${d.getFullYear()}-${nf(d.getMonth() + 1, 2)}-${nf(d.getDate(), 2)} ${DOWS[d.getDay()]} ` +
+      `${nf(d.getHours(), 2)}:${nf(d.getMinutes(), 2)}:${nf(d.getSeconds(), 2)} GLOBAL LIVE`;
   } else {
-    const yr = Math.floor(yf);
-    const q = Math.floor((yf - yr) * 4) + 1;
-    stamp = `${yr} Q${q} HISTORICAL`;
+    // the viewed moment as a real calendar date: your now, transposed
+    const d = new Date(Date.now() + scrubYears * 365.25 * 86400 * 1000);
+    stamp = `${d.getFullYear()}-${nf(d.getMonth() + 1, 2)}-${nf(d.getDate(), 2)} ${DOWS[d.getDay()]} ` +
+      `${nf(d.getHours(), 2)}:${nf(d.getMinutes(), 2)} GLOBAL HISTORICAL`;
   }
 
   const c1 = color(192, 206, 222, 245);  // values — lighter
@@ -832,14 +941,15 @@ function drawHUD(yf, dau, arpu, eng, sessions) {
   textAlign(LEFT, TOP);
   const L = 28; let y = 26;
 
-  fill(c1); textSize(13);
-  text('THE ATTENTION SPACE', L, y);
+  fill(c1); textSize(17);
+  text('THE USER SPACE', L, y);
   // timestamp: top-right corner of the screen, small and dark
   // (right-aligning it inside the HUD column collides with the title)
-  textAlign(RIGHT, TOP);
-  textSize(9); fill(c3);
-  text(stamp, width - L, y + 3);
-  textAlign(LEFT, TOP);
+  const titleW = textWidth('THE USER SPACE');
+  textSize(11); fill(c1);
+  textStyle(BOLD);
+  text(stamp, L + titleW + 14, y + 3);
+  textStyle(NORMAL);
   y += 19;
   stroke(172, 188, 206, 70); line(L, y, L + 250, y); noStroke(); y += 12;
 
@@ -857,82 +967,88 @@ function drawHUD(yf, dau, arpu, eng, sessions) {
     if (sub) { textSize(8); fill(c3); text(sub, L, y - 3); y += 11; textSize(11); }
   };
   textSize(11);
-  row('ACTIVE SESSIONS', liveCount.toLocaleString('en-US'), est);
+  row('ACTIVE SESSIONS NOW', liveCount.toLocaleString('en-US'), est);
   row('STARS RENDERED', swarmN.toLocaleString('en-US')
     + '  (1 = ' + P.usersPerSwarmStar.toLocaleString('en-US') + ' SESSIONS)');
   row('USER STARS', stars.length.toLocaleString('en-US')
     + '  (1 PER ' + P.usersPerStar.toLocaleString('en-US') + ')');
-  row('REVENUE', '$' + Math.round(revPerSec).toLocaleString('en-US') + ' / SECOND', est);
-  const cum = revCumTotal(yf);
-  row('CUMULATIVE REVENUE', cum >= 1e12
-    ? '$' + nf(cum / 1e12, 1, 2) + ' T'
-    : '$' + Math.round(cum / 1e9).toLocaleString('en-US') + ' B', true);
-  row('REVENUE / SESSION', '$' + nf(revPerSession, 1, 3), true);
-  row('ARPU / YEAR', '$' + nf(arpuYr, 1, 2), est);
+  row('REVENUE', curSym() + Math.round(revPerSec * fxRate()).toLocaleString('en-US') + ' / SECOND', est);
+  const cum = adRevCumTotal(yf) * fxRate();
+  row('CUMULATIVE AD REVENUE', cum >= 1e12
+    ? curSym() + nf(cum / 1e12, 1, 2) + ' T'
+    : curSym() + Math.round(cum / 1e9).toLocaleString('en-US') + ' B', true);
+  row('REVENUE / SESSION', curSym() + nf(revPerSession * fxRate(), 1, 3), true);
+  row('ARPU / YEAR', curSym() + nf(arpuYr * fxRate(), 1, 2), est);
   row('ENGAGEMENT RATE', nf(eng, 1, 2) + ' %', est);
   const eventsPerSec = liveEventsPerSec(yf);
   row('ENGAGEMENT EVENTS', '≈ ' + Math.round(eventsPerSec).toLocaleString('en-US') + ' / SEC', true);
   row('PASSIVITY INDEX', nf(passivity, 1, 1) + ' %', true,
     '% OF PLATFORM TIME WITHOUT CONSCIOUS ACTION');
-  if (timeScale !== 1) { fill(c1); text(`[PREVIEW ×${timeScale}]`, L, y + 4); }
+  if (timeScale !== 1) { fill(c1); text(`[TIME-LAPSE ×${timeScale} GRAVITY]`, L, y + 4); }
 
   // ---- key (bottom-left, above the timeline), with drawn icons ----
   textAlign(LEFT, BOTTOM);
   textSize(11);
   fill(c2);
-  text('KEY', L, height - 123);
+  text('KEY', L, height - 135);
   const kT = L + 18, kI = L + 6; // text column, icon column
   fill(c1);
-  text('STAR — ' + P.usersPerSwarmStar.toLocaleString('en-US') + ' ACTIVE SESSIONS', kT, height - 109);
-  text("USER STAR — ONE USER'S SESSION, SIMULATED LIVE", kT, height - 95);
-  text("PINK BOOM — THAT USER'S ENGAGEMENT ACTIVITY", kT, height - 81);
+  text('STAR — ' + P.usersPerSwarmStar.toLocaleString('en-US') + ' ACTIVE SESSIONS', kT, height - 121);
+  text("USER STAR — ONE USER'S SESSION, SIMULATED LIVE", kT, height - 107);
+  text("PINK BOOM — THAT USER'S ENGAGEMENT ACTIVITY", kT, height - 93);
   text('SPARK — GLOBAL ENGAGEMENT, 1 SHOWN PER '
-    + P.sparkSample.toLocaleString('en-US') + ' EVENTS', kT, height - 67);
-  text('BLACK HOLE — EXTRACTED CUMULATIVE REVENUE (since 2004)', kT, height - 53);
+    + P.sparkSample.toLocaleString('en-US') + ' EVENTS', kT, height - 79);
+  text('BLACK HOLE — EXTRACTED CUMULATIVE AD REVENUE (since 2004)', kT, height - 65);
 
   // icons — small miniatures of the real objects, aligned to their lines
   noStroke();
   fill(200, 214, 235, 200);                       // star
-  circle(kI, height - 112, 1.2);
+  circle(kI, height - 128, 1.8);
   fill(235, 242, 255, 225);                       // user star
-  circle(kI, height - 98, 2.4);
-  fill(255, 110, 170, 45);                        // pink boom: faint halo + small core
-  circle(kI, height - 84, 6);
+  circle(kI, height - 114, 3.2);
+  fill(255, 110, 170, 70);                        // pink boom: faint halo + small core
+  circle(kI, height - 100, 8);
   fill(255, 165, 205, 140);
-  circle(kI, height - 84, 2);
+  circle(kI, height - 100, 2.8);
   fill(160, 230, 255, 170);                       // spark diamond
-  sparkShape(kI, height - 70, 3);
+  sparkShape(kI, height - 86, 4);
   fill(0);                                        // black hole: disc + ring
-  circle(kI, height - 56, 5.5);
+  circle(kI, height - 72, 8);
   noFill(); stroke(150, 168, 188, 120);
-  circle(kI, height - 56, 7);
+  circle(kI, height - 72, 8.8);
   noStroke();
 
   // ---- sources + controls ----
-  textSize(9);
-  fill(150, 168, 188, 95);
+  textSize(8);
+  fill(150, 168, 188, 90);
   textAlign(LEFT, BOTTOM);
-  text('DATA: META INVESTOR RELATIONS / SEC 10-K · RIVAL IQ · SOCIALINSIDER · HOOTSUITE · 2026 EST', L, height - 30);
-  text('BEHAVIOR: EMARKETER / STATISTA (TIME SPENT) · VERDUYN ET AL. 2015 (PASSIVE USE) · KAGGLE: ELBLGIHY 2024, BEDMUTHA 2024', L, height - 18);
-  textAlign(RIGHT, BOTTOM);
-  textSize(12);
-  fill(192, 206, 222, 195);
-  text('[←][→] TRAVEL TIME · [F] PREVIEW SPEED', width - L, height - 20);
+  text('DATA: meta ir / sec 10-k · rival iq · socialinsider · hootsuite · emarketer / statista (time spent) · verduyn et al. 2015 (passive use) · kaggle: elblgihy 2024, bedmutha 2024 · 2026 est', L, height - 18);  textAlign(RIGHT, BOTTOM);
+  textSize(9);
+  fill(192, 206, 222, 175);
+  text('press · [←][→] TRAVEL TIME · [F] TIME-LAPSE ×60 GRAVITY', width - L, height - 20);
 
   // ---- timeline slider ----
   const t = (yf - YEAR0) / (nowYearFloat() - YEAR0);
-  stroke(150, 168, 188, 60);
-  strokeWeight(2);
+  stroke(150, 168, 188, 90);
+  strokeWeight(4);                                  // → strokeWeight(4); and alpha 60 → 90
   line(L, height - 38, width - L, height - 38);
-  strokeWeight(1);
+  strokeWeight(3);                                  // → strokeWeight(3);
   const px = lerp(L, width - L, constrain(t, 0, 1));
-  stroke(205, 220, 238, 170);
-  line(px, height - 44, px, height - 32);
+  stroke(205, 220, 238, 220);                       // → alpha 170 → 220
+  line(px, height - 46, px, height - 30);           // → line(px, height - 46, px, height - 30);  (taller marker)
   noStroke();
-  fill(205, 220, 238, 220);
-  circle(px, height - 38, 7);
-  textSize(8); fill(c3);
-  textAlign(RIGHT, BOTTOM); text('NOW', width - L, height - 44);
+  textSize(10); fill(c3);
+  textAlign(LEFT, BOTTOM); text('2012', L, height - 48);
+  textAlign(RIGHT, BOTTOM); text('NOW', width - L, height - 48);
+
+  // ---- nav guide + currency toggle (top-right, clickable) ----
+  textAlign(RIGHT, TOP);
+  textSize(10);
+  fill(c3);
+  text('next: [N]', width - L, 26);
+  text('back: [B]', width - L, 41);
+  text('home: [H]', width - L, 56);
+  textAlign(LEFT, TOP);
 }
 
 // ------------------------------------------------------------------
@@ -971,6 +1087,12 @@ function timelineSeek(mx) {
 
 function mousePressed() {
   intro = false;
+  // top-right controls: nav guide + currency toggle
+  if (mouseX >= width - 130 && mouseX <= width - 14) {
+    if (mouseY >= 24 && mouseY < 39) { window.location.href = NAV_NEXT; return; }
+    if (mouseY >= 39 && mouseY < 54) { window.location.href = NAV_BACK; return; }
+    if (mouseY >= 54 && mouseY < 69) { window.location.href = NAV_HOME; return; }
+  }
   if (Math.abs(mouseY - (height - 38)) < 10 && mouseX >= 14 && mouseX <= width - 14) {
     timelineSeek(mouseX);
     swarmForce = true;
