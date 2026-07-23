@@ -16,6 +16,7 @@
     --secondary: #B0B3B8;
     --divider: #3E4042;
     --input-bg: #3A3B3C;
+    --err: #E0245E;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -61,14 +62,27 @@
   }
   .field::placeholder { color: var(--secondary); }
   .field:focus { border-color: var(--accent); }
+  .field.invalid { border-color: var(--err); }
   select.field { appearance: none; -webkit-appearance: none; background-image:
     linear-gradient(45deg, transparent 50%, var(--secondary) 50%),
     linear-gradient(135deg, var(--secondary) 50%, transparent 50%);
     background-position: calc(100% - 18px) 55%, calc(100% - 13px) 55%;
     background-size: 5px 5px; background-repeat: no-repeat; }
   textarea.field { resize: vertical; min-height: 64px; }
-  .row2 { display: flex; gap: 10px; }
-  .row2 > * { flex: 1; }
+  input[type="number"].field::-webkit-outer-spin-button,
+  input[type="number"].field::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type="number"].field { -moz-appearance: textfield; appearance: textfield; }
+
+  .st-row { display: flex; gap: 10px; align-items: center; }
+  .st-row .field { flex: 1; }
+  .st-unknown {
+    display: inline-flex; align-items: center; gap: 7px; flex-shrink: 0;
+    border: 1px solid var(--divider); border-radius: 18px; padding: 7px 13px;
+    font-size: 13px; cursor: pointer; background: var(--input-bg); user-select: none;
+    color: var(--secondary);
+  }
+  .st-unknown input { accent-color: var(--accent); margin: 0; }
+  .st-unknown:has(input:checked) { border-color: var(--accent); color: var(--accent); background: rgba(45,136,255,.12); }
 
   .pills { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .pill {
@@ -78,7 +92,6 @@
   }
   .pill input { accent-color: var(--accent); }
   .pills.single { grid-template-columns: 1fr; }
-  #genderCustom { display: none; margin-top: 8px; }
 
   .chips { display: flex; flex-wrap: wrap; gap: 8px 8px; }
   .chip {
@@ -114,61 +127,41 @@
   <div class="card">
     <a class="skip-top" href="marketintro.html">skip →</a>
     <h1>Before you begin</h1>
-    <p class="subtitle">A few quick questions — about 2 minutes. Answers are anonymous.</p>
+    <p class="subtitle">A few quick questions — about 2 minutes. Answers are anonymous. 
+      * Basic demographics from your Prolific profile will be linked to your responses via your Prolific ID.</p>
     <div class="head-divider"></div>
 
     <form id="preForm" onsubmit="return false;">
 
-      <label class="q" for="prolificId">Prolific ID / name <span class="opt">(optional — only if you were sent here via Prolific)</span></label>
-      <input class="field" id="prolificId" type="text" placeholder="Your Prolific ID or name…" data-key="prolificId" maxlength="100">
+      <label class="q" for="prolificId">Prolific ID <span class="opt">(should automatically appear)</span></label>
+      <input class="field" id="prolificId" type="text" placeholder="Your Prolific ID…" data-key="prolificId" maxlength="100">
 
       <!-- ============ ABOUT YOU ============ -->
-      <div class="section-title first">About you</div>
-      <div class="section-note">Everything is optional — answer what you're comfortable with.</div>
+      <div class="section-title first">You</div>
 
-      <label class="q" for="age">Age</label>
-      <select class="field" id="age" data-key="age">
+      <label class="q" for="fieldSel">Occupation / field</label>
+      <select class="field" id="fieldSel" data-key="occupationField">
         <option value="">Select…</option>
-        <option>under 18</option><option>18–24</option><option>25–34</option>
-        <option>35–44</option><option>45–54</option><option>55–64</option><option>65+</option>
+        <option>Technology &amp; IT</option>
+        <option>Business &amp; finance</option>
+        <option>Arts, design &amp; humanities</option>
+        <option>Social sciences</option>
+        <option>Natural sciences &amp; engineering</option>
+        <option>Healthcare</option>
+        <option>Education</option>
+        <option>Media &amp; communications</option>
+        <option>Law &amp; government</option>
+        <option>Other</option>
       </select>
 
-      <label class="q">Gender</label>
-      <div class="pills" id="genderPills">
-        <label class="pill">Female <input type="radio" name="gender" value="Female"></label>
-        <label class="pill">Male <input type="radio" name="gender" value="Male"></label>
-        <label class="pill">Custom <input type="radio" name="gender" value="Custom"></label>
-        <label class="pill">Prefer not to say <input type="radio" name="gender" value="Prefer not to say"></label>
-      </div>
-      <input class="field" id="genderCustom" type="text" placeholder="Your gender (optional)" maxlength="60">
-
-      <label class="q">Location</label>
-      <div class="row2">
-        <input class="field" type="text" placeholder="Country" data-key="country" maxlength="60">
-        <input class="field" type="text" placeholder="City" data-key="city" maxlength="60">
+      <label class="q" for="screentime">Average daily social media screen time </label>
+      <div class="st-row">
+        <input class="field" id="screentime" type="text" placeholder="e.g. 3h, 5min" data-key="screentime" maxlength="40">
+        <label class="st-unknown">unknown <input type="checkbox" id="stUnknown"></label>
       </div>
 
-      <label class="q" for="occupation">Occupation</label>
-      <input class="field" id="occupation" type="text" placeholder="e.g. student, designer, teacher…" data-key="occupation" maxlength="80">
-
-      <label class="q" for="fieldSel">Field of occupation</label>
-      <select class="field" id="fieldSel" data-key="field">
-        <option value="">Select…</option>
-        <option>Arts &amp; design</option><option>Education</option><option>Technology / IT</option>
-        <option>Healthcare</option><option>Business &amp; finance</option><option>Science &amp; research</option>
-        <option>Media &amp; communications</option><option>Government / public sector</option>
-        <option>Student</option><option>Other</option>
-      </select>
-
-      <label class="q" for="screentime">Daily social media screen time <span class="opt">(optional)</span></label>
-      <select class="field" id="screentime" data-key="screentime">
-        <option value="">Select…</option>
-        <option>less than 1h</option><option>1–3h</option><option>3–5h</option>
-        <option>more than 5h</option><option>I'd rather not know</option>
-      </select>
-
-      <!-- ============ YOU & META ============ -->
-      <div class="section-title">You &amp; Meta</div>
+      <!-- ============ META ============ -->
+      <div class="section-title">Meta</div>
 
       <label class="q">1. Which Meta platforms do you use daily?</label>
       <div class="chips">
@@ -206,14 +199,15 @@
         <span class="endlab right">very aware</span>
       </div>
 
-      <label class="q">4. How does Meta make most of its money?</label>
-      <div class="pills single">
-        <label class="pill">Subscription fees from users <input type="radio" name="bizmodel" value="subscriptions"></label>
-        <label class="pill">Selling user data to third parties <input type="radio" name="bizmodel" value="selling data"></label>
-        <label class="pill">Showing targeted ads based on user behaviour <input type="radio" name="bizmodel" value="targeted ads"></label>
-        <label class="pill">In-app purchases and digital goods <input type="radio" name="bizmodel" value="in-app purchases"></label>
-        <label class="pill">I don't know <input type="radio" name="bizmodel" value="don't know"></label>
-      </div>
+<label class="q" for="bizmodelSel">4. How does Meta make most of its money?</label>
+<select class="field" id="bizmodelSel" data-key="bizmodel">
+  <option value="">Select…</option>
+  <option value="subscriptions">Subscription fees from users</option>
+  <option value="selling data">Selling user personal data directly to other companies</option>
+  <option value="targeted ads">Selling advertisers targeted access based on user behaviour</option>
+  <option value="in-app purchases">In-app purchases and digital goods</option>
+  <option value="don't know">I don't know</option>
+</select>
 
       <label class="q">5. How concerned are you about your personal data being used commercially?</label>
       <div class="likert">
@@ -230,7 +224,6 @@
 
       <div class="submit-zone">
         <button class="btn-signup" id="submitBtn">Begin →</button>
-        <a class="skip-bottom" href="marketintro.html">skip and go straight in →</a>
       </div>
       <div class="consent">By continuing, you agree to participate in this study for educational and research purposes. Your responses are anonymized.</div>
     </form>
@@ -252,12 +245,14 @@
   if (pid && inp && !inp.value) inp.value = pid;
 })();
 
-document.querySelectorAll('input[name="gender"]').forEach((r) =>
-  r.addEventListener("change", () => {
-    document.getElementById("genderCustom").style.display =
-      r.value === "Custom" && r.checked ? "block" : "none";
-  })
-);
+/* "unknown" tick disables the number input */
+document.getElementById("stUnknown").addEventListener("change", (e) => {
+  const st = document.getElementById("screentime");
+  st.disabled = e.target.checked;
+  if (e.target.checked) { st.value = ""; st.classList.remove("invalid"); }
+});
+document.getElementById("screentime").addEventListener("input", (e) => e.target.classList.remove("invalid"));
+document.getElementById("fieldSel").addEventListener("change", (e) => e.target.classList.remove("invalid"));
 
 function radioVal(name) {
   const el = document.querySelector(`input[name="${name}"]:checked`);
@@ -271,29 +266,31 @@ document.getElementById("submitBtn").addEventListener("click", () => {
   const byKey = {};
   document.querySelectorAll("[data-key]").forEach((el) => { byKey[el.dataset.key] = el.value.trim(); });
 
-  let gender = radioVal("gender");
-  if (gender === "Custom") {
-    const custom = document.getElementById("genderCustom").value.trim();
-    gender = custom ? "Custom: " + custom : "Custom";
+  /* required: occupation/field + screen time (number or "unknown") */
+  const stUnknown = document.getElementById("stUnknown").checked;
+  let firstInvalid = null;
+  if (!byKey.occupationField) {
+    const el = document.getElementById("fieldSel");
+    el.classList.add("invalid"); firstInvalid = firstInvalid || el;
   }
+  if (!stUnknown && !byKey.screentime) {
+    const el = document.getElementById("screentime");
+    el.classList.add("invalid"); firstInvalid = firstInvalid || el;
+  }
+  if (firstInvalid) { firstInvalid.scrollIntoView({ behavior: "smooth", block: "center" }); return; }
 
   const baseline = {
     prolificId: byKey.prolificId || null,
     submittedAt: new Date().toISOString(),
     demographics: {
-      age: byKey.age || null,
-      gender: gender,
-      country: byKey.country || null,
-      city: byKey.city || null,
-      occupation: byKey.occupation || null,
-      field: byKey.field || null,
-      screentime: byKey.screentime || null,
+      occupationField: byKey.occupationField,
+      screentime: stUnknown ? "unknown" : byKey.screentime,
     },
     baseline: {
       platforms: checkVals("platforms"),
       passivity: radioVal("passivity"),
       awareness: radioVal("awareness"),
-      bizModel: radioVal("bizmodel"),
+      bizModel: byKey.bizmodel || null,
       concern: radioVal("concern"),
     },
   };
