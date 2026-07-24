@@ -27,7 +27,7 @@
   a:hover { text-decoration: underline; }
   button { font-family: inherit; border: none; cursor: pointer; }
 
-  .wrap { max-width: 500px; margin: 0 auto; padding: 28px 16px 48px; }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 28px 16px 48px; }
   .wordmark {
     color: var(--accent); font-size: 34px; font-weight: 700; letter-spacing: -1.5px;
     font-family: Helvetica, Arial, sans-serif; text-align: center; margin-bottom: 16px;
@@ -35,27 +35,28 @@
   }
   .card {
     background: var(--card); border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,.5);
-    padding: 18px 18px 24px; position: relative;
+    padding: 22px 26px 28px; position: relative;
   }
   .skip-top {
     position: absolute; top: 16px; right: 16px; font-size: 12px; color: var(--secondary);
   }
   h1 { font-size: 25px; font-weight: 700; }
   .subtitle { color: var(--secondary); font-size: 15px; margin: 2px 0 14px; }
-  .head-divider { height: 1px; background: var(--divider); margin: 0 -18px 4px; }
+  .head-divider { height: 1px; background: var(--divider); margin: 0 -26px 4px; }
 
   .section-title {
-    font-size: 15px; font-weight: 700; margin: 22px 0 2px; padding-top: 16px;
+    font-size: 15px; font-weight: 700; margin: 28px 0 2px; padding-top: 20px;
     border-top: 1px solid var(--divider);
   }
-  .section-title.first { border-top: none; padding-top: 8px; }
+  .section-title.first { border-top: none; padding-top: 10px; }
   .viz-name {
     font-size: 13px; font-weight: 700; color: var(--accent);
     margin: 18px 0 0; letter-spacing: .3px;
   }
 
-  .q { display: block; font-size: 13px; font-weight: 600; color: var(--secondary); margin: 14px 0 6px; }
+  .q { display: block; font-size: 13px; font-weight: 600; color: var(--secondary); margin: 22px 0 8px; }
   .q .opt { font-weight: 400; }
+  .q-hint { display: block; font-size: 12px; font-weight: 400; color: var(--secondary); margin: -4px 0 8px; }
 
   .field, select.field, textarea.field {
     width: 100%; background: var(--input-bg); border: 1px solid var(--divider);
@@ -69,7 +70,7 @@
     linear-gradient(135deg, var(--secondary) 50%, transparent 50%);
     background-position: calc(100% - 18px) 55%, calc(100% - 13px) 55%;
     background-size: 5px 5px; background-repeat: no-repeat; }
-  textarea.field { resize: vertical; min-height: 64px; }
+  textarea.field { resize: vertical; min-height: 120px; }
 
   .pills { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .pill {
@@ -81,13 +82,13 @@
   .pills.single { grid-template-columns: 1fr; }
 
   .likert { display: flex; align-items: center; justify-content: space-between; gap: 4px; margin-top: 6px; }
-  .likert .endlab { font-size: 11.5px; color: var(--secondary); max-width: 84px; line-height: 1.25; }
+  .likert .endlab { font-size: 11.5px; color: var(--secondary); max-width: 110px; line-height: 1.25; }
   .likert .endlab.right { text-align: right; }
-  .likert .dots { display: flex; gap: 18px; }
+  .likert .dots { display: flex; gap: 22px; }
   .likert .dot { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 12px; color: var(--secondary); cursor: pointer; }
   .likert .dot input { accent-color: var(--accent); width: 17px; height: 17px; cursor: pointer; }
 
-  .submit-zone { margin-top: 26px; text-align: center; }
+  .submit-zone { margin-top: 30px; text-align: center; }
   .btn-signup {
     background: var(--green); color: #fff; font-size: 18px; font-weight: 700;
     padding: 11px 54px; border-radius: 6px; transition: background .1s;
@@ -110,24 +111,28 @@
 
     <form id="surveyForm" onsubmit="return false;">
 
-      <label class="q" for="prolificId">Prolific ID <span class="opt">(should automatically appear)</span></label>
-      <input class="field" id="prolificId" type="text" placeholder="Your Prolific ID…" data-key="prolificId" maxlength="100">
+      <!-- shown only when the participant arrived via Prolific -->
+      <div id="prolificBlock" style="display:none;">
+        <label class="q" for="prolificId">Prolific ID <span class="opt">(should automatically appear)</span></label>
+        <input class="field" id="prolificId" type="text" placeholder="Your Prolific ID…" data-key="prolificId" maxlength="100">
+      </div>
 
       <!-- ============ ABOUT THE PROJECT ============ -->
       <div class="section-title first">About the project</div>
 
       <label class="q" for="message">1. What do you think this project is trying to say?</label>
-      <textarea class="field" id="message" data-key="message" maxlength="600" placeholder="There is no wrong answer."></textarea>
+      <textarea class="field" id="message" data-key="message" maxlength="600"></textarea>
 
       <label class="q" for="feelings">2. How did it make you feel?</label>
-      <textarea class="field" id="feelings" data-key="feelings" maxlength="600" placeholder="A few words are enough…"></textarea>
+      <textarea class="field" id="feelings" data-key="feelings" maxlength="600"></textarea>
 
       <!-- ============ THE 3 VISUALISATIONS ============ -->
       <div class="section-title">The 3 visualisations</div>
 
       <!-- 3.1 the market -->
       <label class="q" for="meaningMarket">3.1 What did you think of #1 — the market?</label>
-      <textarea class="field" id="meaningMarket" data-key="meaningMarket" maxlength="600" placeholder="in short, what was the meaning for you…"></textarea>
+      <span class="q-hint">what was the metaphor, the meaning for you…</span>
+      <textarea class="field" id="meaningMarket" data-key="meaningMarket" maxlength="600"></textarea>
 
       <label class="q">How easy was it to understand?</label>
       <div class="likert">
@@ -157,7 +162,8 @@
 
       <!-- 3.2 the tree -->
       <label class="q" for="meaningTree">3.2 What did you think of #2 — the tree?</label>
-      <textarea class="field" id="meaningTree" data-key="meaningTree" maxlength="600" placeholder="in short, what was the meaning for you…"></textarea>
+      <span class="q-hint">what was the metaphor, the meaning for you…</span>
+      <textarea class="field" id="meaningTree" data-key="meaningTree" maxlength="600"></textarea>
 
       <label class="q">How easy was it to understand?</label>
       <div class="likert">
@@ -187,7 +193,8 @@
 
       <!-- 3.3 the space -->
       <label class="q" for="meaningSpace">3.3 What did you think of #3 — the space?</label>
-      <textarea class="field" id="meaningSpace" data-key="meaningSpace" maxlength="600" placeholder="in short, what was the meaning for you…"></textarea>
+      <span class="q-hint">what was the metaphor, the meaning for you…</span>
+      <textarea class="field" id="meaningSpace" data-key="meaningSpace" maxlength="600"></textarea>
 
       <label class="q">How easy was it to understand?</label>
       <div class="likert">
@@ -218,7 +225,7 @@
       <!-- ============ AFTER THIS PROJECT ============ -->
       <div class="section-title">After this project</div>
 
-      <label class="q">4. Does Meta collect data when you scroll without liking, posting or commenting?</label>
+      <label class="q">4. Do you think Meta collects data when you scroll without liking, posting or commenting?</label>
       <div class="pills single">
         <label class="pill">Yes <input type="radio" name="passiveData" value="yes"></label>
         <label class="pill">No <input type="radio" name="passiveData" value="no"></label>
@@ -238,7 +245,7 @@
         <span class="endlab right">very aware</span>
       </div>
 
-      <label class="q">6. "After this project, I feel differently about the time I spend on social media."</label>
+      <label class="q">6. How much do you agree with the statement "After this project, I feel differently about the time I spend on social media."?</label>
       <div class="likert">
         <span class="endlab">strongly disagree</span>
         <span class="dots">
@@ -251,8 +258,8 @@
         <span class="endlab right">strongly agree</span>
       </div>
 
-      <label class="q" for="actions">7. Will you do anything differently after today?</label>
-      <textarea class="field" id="actions" data-key="actions" maxlength="600" placeholder="e.g. check my ad settings, limit my screen time, probably nothing…"></textarea>
+      <label class="q" for="actions">7. Will you do anything differently after today? If yes, what?</label>
+      <textarea class="field" id="actions" data-key="actions" maxlength="600"></textarea>
 
       <label class="q">8. Could a plain article with the same facts have had the same effect?</label>
       <div class="pills single">
@@ -261,7 +268,7 @@
         <label class="pill">I'm not sure <input type="radio" name="artForm" value="unsure"></label>
       </div>
 
-      <label class="q">9. Would you be likely to participate in a community about data privacy — sharing practices, ideas, solutions?</label>
+      <label class="q">9. How likely would you participate in a community about data privacy — sharing practices, ideas, solutions?</label>
       <div class="likert">
         <span class="endlab">not likely</span>
         <span class="dots">
@@ -290,11 +297,14 @@
 
 <script src="shared/config.js"></script>
 <script>
-/* pre-fill the Prolific ID captured earlier (participant types nothing) */
+/* Prolific field shown + pre-filled only for participants who arrived via Prolific */
 (function () {
   const pid = sessionStorage.getItem("md_prolific");
-  const inp = document.getElementById("prolificId");
-  if (pid && inp && !inp.value) inp.value = pid;
+  if (pid) {
+    document.getElementById("prolificBlock").style.display = "";
+    const inp = document.getElementById("prolificId");
+    if (!inp.value) inp.value = pid;
+  }
 })();
 
 function radioVal(name) {

@@ -28,7 +28,7 @@
   a:hover { text-decoration: underline; }
   button { font-family: inherit; border: none; cursor: pointer; }
 
-  .wrap { max-width: 500px; margin: 0 auto; padding: 28px 16px 48px; }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 28px 16px 48px; }
   .wordmark {
     color: var(--accent); font-size: 34px; font-weight: 700; letter-spacing: -1.5px;
     font-family: Helvetica, Arial, sans-serif; text-align: center; margin-bottom: 16px;
@@ -36,23 +36,23 @@
   }
   .card {
     background: var(--card); border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,.5);
-    padding: 18px 18px 24px; position: relative;
+    padding: 22px 26px 28px; position: relative;
   }
   .skip-top {
     position: absolute; top: 16px; right: 16px; font-size: 12px; color: var(--secondary);
   }
   h1 { font-size: 25px; font-weight: 700; }
   .subtitle { color: var(--secondary); font-size: 15px; margin: 2px 0 14px; }
-  .head-divider { height: 1px; background: var(--divider); margin: 0 -18px 4px; }
+  .head-divider { height: 1px; background: var(--divider); margin: 0 -26px 4px; }
 
   .section-title {
-    font-size: 15px; font-weight: 700; margin: 22px 0 2px; padding-top: 16px;
+    font-size: 15px; font-weight: 700; margin: 28px 0 2px; padding-top: 20px;
     border-top: 1px solid var(--divider);
   }
-  .section-title.first { border-top: none; padding-top: 8px; }
+  .section-title.first { border-top: none; padding-top: 10px; }
   .section-note { font-size: 12px; color: var(--secondary); margin-bottom: 4px; }
 
-  .q { display: block; font-size: 13px; font-weight: 600; color: var(--secondary); margin: 14px 0 6px; }
+  .q { display: block; font-size: 13px; font-weight: 600; color: var(--secondary); margin: 22px 0 8px; }
   .q .opt { font-weight: 400; }
 
   .field, select.field, textarea.field {
@@ -69,9 +69,9 @@
     background-position: calc(100% - 18px) 55%, calc(100% - 13px) 55%;
     background-size: 5px 5px; background-repeat: no-repeat; }
   textarea.field { resize: vertical; min-height: 64px; }
-  input[type="number"].field::-webkit-outer-spin-button,
-  input[type="number"].field::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-  input[type="number"].field { -moz-appearance: textfield; appearance: textfield; }
+  .row2 { display: flex; gap: 10px; }
+  .row2 > * { flex: 1; }
+  #genderCustom { display: none; margin-top: 8px; }
 
   .st-row { display: flex; gap: 10px; align-items: center; }
   .st-row .field { flex: 1; }
@@ -103,13 +103,13 @@
   .chip:has(input:checked) { border-color: var(--accent); color: var(--accent); background: rgba(45,136,255,.12); }
 
   .likert { display: flex; align-items: center; justify-content: space-between; gap: 4px; margin-top: 6px; }
-  .likert .endlab { font-size: 11.5px; color: var(--secondary); max-width: 84px; line-height: 1.25; }
+  .likert .endlab { font-size: 11.5px; color: var(--secondary); max-width: 110px; line-height: 1.25; }
   .likert .endlab.right { text-align: right; }
-  .likert .dots { display: flex; gap: 18px; }
+  .likert .dots { display: flex; gap: 22px; }
   .likert .dot { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 12px; color: var(--secondary); cursor: pointer; }
   .likert .dot input { accent-color: var(--accent); width: 17px; height: 17px; cursor: pointer; }
 
-  .submit-zone { margin-top: 26px; text-align: center; }
+  .submit-zone { margin-top: 30px; text-align: center; }
   .btn-signup {
     background: var(--green); color: #fff; font-size: 18px; font-weight: 700;
     padding: 11px 54px; border-radius: 6px; transition: background .1s;
@@ -127,36 +127,70 @@
   <div class="card">
     <a class="skip-top" href="marketintro.html">skip →</a>
     <h1>Before you begin</h1>
-    <p class="subtitle">A few quick questions — about 2 minutes. Answers are anonymous. 
-      * Basic demographics from your Prolific profile will be linked to your responses via your Prolific ID.</p>
+    <p class="subtitle">A few quick questions — about 2 minutes. Answers are anonymous.<span id="prolificDemoNote" style="display:none;">
+      * Basic demographics from your Prolific profile will be linked to your responses via your Prolific ID.</span></p>
     <div class="head-divider"></div>
 
     <form id="preForm" onsubmit="return false;">
 
-      <label class="q" for="prolificId">Prolific ID <span class="opt">(should automatically appear)</span></label>
-      <input class="field" id="prolificId" type="text" placeholder="Your Prolific ID…" data-key="prolificId" maxlength="100">
+      <!-- shown only when the participant arrived via Prolific -->
+      <div id="prolificBlock" style="display:none;">
+        <label class="q" for="prolificId">Prolific ID <span class="opt">(should automatically appear)</span></label>
+        <input class="field" id="prolificId" type="text" placeholder="Your Prolific ID…" data-key="prolificId" maxlength="100">
+      </div>
 
-      <!-- ============ ABOUT YOU ============ -->
+      <!-- ============ YOU ============ -->
       <div class="section-title first">You</div>
+
+      <!-- demographics: shown only for participants who did NOT arrive via Prolific -->
+      <div id="demoBlock">
+        <label class="q" for="age">Age</label>
+        <select class="field" id="age" data-key="age">
+          <option value="">Select…</option>
+          <option>under 18</option><option>18–24</option><option>25–34</option>
+          <option>35–44</option><option>45–54</option><option>55–64</option><option>65+</option>
+        </select>
+
+        <label class="q">Gender</label>
+        <div class="pills" id="genderPills">
+          <label class="pill">Female <input type="radio" name="gender" value="Female"></label>
+          <label class="pill">Male <input type="radio" name="gender" value="Male"></label>
+          <label class="pill">Custom <input type="radio" name="gender" value="Custom"></label>
+          <label class="pill">Prefer not to say <input type="radio" name="gender" value="Prefer not to say"></label>
+        </div>
+        <input class="field" id="genderCustom" type="text" placeholder="Your gender (optional)" maxlength="60">
+
+        <label class="q">Location</label>
+        <div class="row2">
+          <input class="field" type="text" placeholder="Country" data-key="country" maxlength="60">
+          <input class="field" type="text" placeholder="City" data-key="city" maxlength="60">
+        </div>
+      </div>
 
       <label class="q" for="fieldSel">Occupation / field</label>
       <select class="field" id="fieldSel" data-key="occupationField">
         <option value="">Select…</option>
-        <option>Technology &amp; IT</option>
-        <option>Business &amp; finance</option>
-        <option>Arts, design &amp; humanities</option>
-        <option>Social sciences</option>
-        <option>Natural sciences &amp; engineering</option>
-        <option>Healthcare</option>
-        <option>Education</option>
-        <option>Media &amp; communications</option>
-        <option>Law &amp; government</option>
+        <option>Arts, Design &amp; Culture</option>
+        <option>Education &amp; Academia</option>
+        <option>Finance &amp; Business</option>
+        <option>Healthcare &amp; Medicine</option>
+        <option>Homemaker</option>
+        <option>Law &amp; Government</option>
+        <option>Media &amp; Communications</option>
+        <option>Retired</option>
+        <option>Sales &amp; Office</option>
+        <option>Science &amp; Research</option>
+        <option>Social Sciences</option>
+        <option>Student</option>
+        <option>Technology &amp; Engineering</option>
+        <option>Trades &amp; Labor</option>
+        <option>Unemployed</option>
         <option>Other</option>
       </select>
 
-      <label class="q" for="screentime">Average daily social media screen time </label>
+      <label class="q" for="screentime">Average daily social media screen time</label>
       <div class="st-row">
-        <input class="field" id="screentime" type="text" placeholder="e.g. 3h, 5min" data-key="screentime" maxlength="40">
+        <input class="field" id="screentime" type="text" placeholder="3 hours" data-key="screentime" maxlength="40">
         <label class="st-unknown">unknown <input type="checkbox" id="stUnknown"></label>
       </div>
 
@@ -199,15 +233,15 @@
         <span class="endlab right">very aware</span>
       </div>
 
-<label class="q" for="bizmodelSel">4. How does Meta make most of its money?</label>
-<select class="field" id="bizmodelSel" data-key="bizmodel">
-  <option value="">Select…</option>
-  <option value="subscriptions">Subscription fees from users</option>
-  <option value="selling data">Selling user personal data directly to other companies</option>
-  <option value="targeted ads">Selling advertisers targeted access based on user behaviour</option>
-  <option value="in-app purchases">In-app purchases and digital goods</option>
-  <option value="don't know">I don't know</option>
-</select>
+      <label class="q" for="bizmodelSel">4. How do you think Meta makes most of its money?</label>
+      <select class="field" id="bizmodelSel" data-key="bizmodel">
+        <option value="">Select…</option>
+        <option value="subscriptions">Charging users a monthly subscription fee</option>
+        <option value="selling data">Selling users' personal data to other companies</option>
+        <option value="targeted ads">Charging advertisers to show users targeted ads (based on their behaviour)</option>
+        <option value="in-app purchases">Selling things inside the apps (in-app purchases, digital goods)</option>
+        <option value="don't know">I don't know</option>
+      </select>
 
       <label class="q">5. How concerned are you about your personal data being used commercially?</label>
       <div class="likert">
@@ -238,14 +272,29 @@
 
 <script src="shared/config.js"></script>
 <script>
-/* pre-fill the Prolific ID captured on the login page (participant types nothing) */
-(function () {
-  const pid = sessionStorage.getItem("md_prolific");
+/* ---- Prolific detection: field + note shown ONLY for Prolific arrivals;
+       demographics shown ONLY for everyone else (personal-network links) ---- */
+try {
+  const pid = new URLSearchParams(location.search).get("PROLIFIC_PID");
+  if (pid) sessionStorage.setItem("md_prolific", pid);
+} catch (e) {}
+const IS_PROLIFIC = !!sessionStorage.getItem("md_prolific");
+if (IS_PROLIFIC) {
+  document.getElementById("prolificBlock").style.display = "";
+  document.getElementById("prolificDemoNote").style.display = "";
+  document.getElementById("demoBlock").style.display = "none";
   const inp = document.getElementById("prolificId");
-  if (pid && inp && !inp.value) inp.value = pid;
-})();
+  if (!inp.value) inp.value = sessionStorage.getItem("md_prolific");
+}
 
-/* "unknown" tick disables the number input */
+document.querySelectorAll('input[name="gender"]').forEach((r) =>
+  r.addEventListener("change", () => {
+    document.getElementById("genderCustom").style.display =
+      r.value === "Custom" && r.checked ? "block" : "none";
+  })
+);
+
+/* "unknown" tick disables the screen time input */
 document.getElementById("stUnknown").addEventListener("change", (e) => {
   const st = document.getElementById("screentime");
   st.disabled = e.target.checked;
@@ -266,7 +315,7 @@ document.getElementById("submitBtn").addEventListener("click", () => {
   const byKey = {};
   document.querySelectorAll("[data-key]").forEach((el) => { byKey[el.dataset.key] = el.value.trim(); });
 
-  /* required: occupation/field + screen time (number or "unknown") */
+  /* required: occupation/field + screen time (text or "unknown") */
   const stUnknown = document.getElementById("stUnknown").checked;
   let firstInvalid = null;
   if (!byKey.occupationField) {
@@ -279,10 +328,20 @@ document.getElementById("submitBtn").addEventListener("click", () => {
   }
   if (firstInvalid) { firstInvalid.scrollIntoView({ behavior: "smooth", block: "center" }); return; }
 
+  let gender = radioVal("gender");
+  if (gender === "Custom") {
+    const custom = document.getElementById("genderCustom").value.trim();
+    gender = custom ? "Custom: " + custom : "Custom";
+  }
+
   const baseline = {
     prolificId: byKey.prolificId || null,
     submittedAt: new Date().toISOString(),
     demographics: {
+      age: IS_PROLIFIC ? null : (byKey.age || null),
+      gender: IS_PROLIFIC ? null : gender,
+      country: IS_PROLIFIC ? null : (byKey.country || null),
+      city: IS_PROLIFIC ? null : (byKey.city || null),
       occupationField: byKey.occupationField,
       screentime: stUnknown ? "unknown" : byKey.screentime,
     },

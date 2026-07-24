@@ -649,7 +649,7 @@
 
         <div class="about-row">
           <span class="about-ic"><svg><use href="#ic-thumb"/></svg></span>
-          <div class="txt"><span id="likeCountText"></span></div>
+          <div class="txt"><span id="likeCountText" style="cursor:pointer;" title="Like this page"></span></div>
         </div>
 
         <div class="about-row">
@@ -905,7 +905,7 @@ const RX_KEYS = Object.keys(RX);
 
 const now = Date.now();
 const state = {
-  pageLikes: 127,
+  pageLikes: 0,
   iLikePage: false,
   posts: [
     {
@@ -957,7 +957,7 @@ const DISPLAY_NAME = VISITOR_NAME || "Anonymous visitor";
 /* ---------- database (Supabase via shared/config.js) ---------- */
 const DB = window.MD_DB;
 const MY_ID = window.MD_PARTICIPANT_ID;
-const LIKE_BASE = 1;              /* display offset added to the real like count */
+const LIKE_BASE = 0;              /* display offset added to the real like count */
 let MOD_ON = false;                 /* moderator mode (open the page with #mod) */
 
 /* ---------- helpers ---------- */
@@ -995,10 +995,10 @@ function renderPageButtons() {
   const likeBtn = $("#pageLikeBtn");
   likeBtn.className = "btn " + (state.iLikePage ? "btn-grey-s" : "btn-lightblue");
   likeBtn.querySelector("span").textContent = state.iLikePage ? "Liked" : "Like";
-  $("#likeCountText").innerHTML = `<strong>${fmt(state.pageLikes)}</strong> people like this`;
+  $("#likeCountText").innerHTML = `<strong>${fmt(state.pageLikes)}</strong> ${state.pageLikes === 1 ? "person likes" : "people like"} this`;
 }
 
-$("#pageLikeBtn").addEventListener("click", () => {
+function togglePageLike() {
   state.iLikePage = !state.iLikePage;
   state.pageLikes += state.iLikePage ? 1 : -1;
   /* SYNC ✓ page like -> database */
@@ -1006,7 +1006,9 @@ $("#pageLikeBtn").addEventListener("click", () => {
   else DB.del("page_likes", "participant_id=eq." + encodeURIComponent(MY_ID));
   renderPageButtons();
   if (state.iLikePage) toast("Thanks for liking Our Data Community 💙");
-});
+}
+$("#pageLikeBtn").addEventListener("click", togglePageLike);
+$("#likeCountText").addEventListener("click", togglePageLike);
 
 /* ---------- reaction rendering ---------- */
 function rxTotal(r) { return RX_KEYS.reduce((s, k) => s + r[k], 0); }
